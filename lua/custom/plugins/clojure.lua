@@ -29,5 +29,6 @@ return {
     vim.g['conjure#debug'] = false
     vim.g['conjure#client#clojure#nrepl#mapping#session_fresh'] = 'rf'
     vim.g['conjure#client_on_load'] = false
+    vim.g['conjure#mapping#doc_word'] = false
   end,
 }

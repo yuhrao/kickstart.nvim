@@ -1,59 +1,8 @@
-# Devstudio
-snippet <dst Dev Studio
-	(require '[collage.importers.${1:importer} :as imp] :reload)
-
-	(defn prepare-importer []
-		(load-importer imp/importer-config))
-
-	(comment
-		(time
-			(do
-				(prepare-importer)
-				(def f (get-feed))))
-
-		(-> f first keys sort)
-
-		(do
-			(prepare-importer)
-			(make-skus!)
-			(def skus (get-parsed-skus)))
-
-		(do
-			(prepare-importer)
-			(make-skus!)
-			(make-colorways!)
-			(def skus (get-parsed-skus))
-			(def acc-cws (get-all-colorways))
-			(def cws (mapcat second acc-cws)))
-
-		(do
-			(prepare-importer)
-			(with-redefs [collage.importers.core/guardrails-enabled? (constantly false)]
-			 (sync-feed))
-			nil)
-
-		$0
-
-		)
-
 # Portal
 snippet <portal Portal config
 
-	(require 'portal.api)
-	(defonce portal (atom nil))
-	(when (nil? @portal)
-		(reset! portal (portal.api/open {}))
-		(add-tap #'portal.api/submit))
-
-# Nike
-snippet <nike Nike run
-	(comment
-	(sync-feed {:download-only? true :folder-name-regex #"2024-05-14T07"})
-	
-	(sync-feed {:include-synced?       true
-	            :keep-downloaded-data? true
-	            :use-downloaded-data?  true
-	            :folder-name-regex     #"2024-03-20"
-	            :clone-outfits?        false
-	            :simulation-mode?      true})
-	 )
+  (require 'portal.api)
+  (defonce portal (atom nil))
+  (when (nil? @portal)
+          (reset! portal (portal.api/open {:port 8013}))
+          (add-tap #'portal.api/submit))

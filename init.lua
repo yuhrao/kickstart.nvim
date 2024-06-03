@@ -840,6 +840,7 @@ require('lazy').setup({
       -- - saiw) - [S]urround [A]dd [I]nner [W]ord [)]Paren
       -- - sd'   - [S]urround [D]elete [']quotes
       -- - sr)'  - [S]urround [R]eplace [)] [']
+      -- Replace with https://github.com/kylechui/nvim-surround
       require('mini.surround').setup()
 
       -- Simple and easy statusline.

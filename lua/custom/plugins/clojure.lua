@@ -1,6 +1,6 @@
 return {
   'Olical/conjure',
-  ft = { 'clojure', 'fennel', 'python' }, -- etc
+  ft = { 'clojure' }, -- etc
   -- [Optional] cmp-conjure for cmp
   dependencies = {
     {
@@ -20,7 +20,7 @@ return {
       end,
     },
   },
-  config = function(_, opts)
+  config = function(_, _)
     require('conjure.main').main()
     require('conjure.mapping')['on-filetype']()
   end,
@@ -30,5 +30,6 @@ return {
     vim.g['conjure#client#clojure#nrepl#mapping#session_fresh'] = 'rf'
     vim.g['conjure#client_on_load'] = false
     vim.g['conjure#mapping#doc_word'] = false
+    vim.g['conjure#extract#tree_sitter#enabled'] = true
   end,
 }

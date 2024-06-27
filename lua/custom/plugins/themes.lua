@@ -11,7 +11,8 @@
 return {
   { 'catppuccin/nvim', name = 'catppuccin', priority = 1000 },
   {
-    dir = vim.fn.stdpath 'config' .. '/lua/custom/local/dracula-beta',
+    dir = vim.fn.stdpath 'config' .. '/lua/custom/local/dracula-pro-2',
+    -- dir = vim.fn.stdpath 'config' .. '/lua/custom/local/dracula-beta',
     lazy = false,
     config = function()
       vim.opt.termguicolors = true

@@ -825,7 +825,15 @@ require('lazy').setup({
   },
 
   -- Highlight todo, notes, etc in comments
-  { 'folke/todo-comments.nvim', event = 'VimEnter', dependencies = { 'nvim-lua/plenary.nvim' }, opts = { signs = true } },
+  {
+    'folke/todo-comments.nvim',
+    event = 'VimEnter',
+    keys = {
+      { '<leader>st', '<Cmd>TodoTelescope<CR>', mode = { 'n', 'x' }, desc = '[S]earch [T]odos' },
+    },
+    dependencies = { 'nvim-lua/plenary.nvim' },
+    opts = { signs = true },
+  },
 
   { -- Collection of various small independent plugins/modules
     'echasnovski/mini.nvim',
@@ -963,4 +971,4 @@ require('lazy').setup({
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
-vim.cmd 'colorscheme catppuccin-frappe'
+vim.g['VM_leader'] = '|'

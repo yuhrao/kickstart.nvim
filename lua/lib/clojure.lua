@@ -1,12 +1,5 @@
 local clj = {}
 
-clj.setup_cmp = function()
-  local cmp = require 'cmp'
-  local config = cmp.get_config()
-  table.insert(config.sources, { name = 'conjure' })
-  return cmp.setup(config)
-end
-
 local function EvalToClipboard()
   local extract = require 'conjure.extract'
   local eval = require 'conjure.eval'
@@ -35,8 +28,6 @@ clj.config = function()
   require('conjure.main').main()
   require('conjure.mapping')['on-filetype']()
   local client = require 'conjure.client'
-
-  clj.setup_cmp()
 
   vim.keymap.set('n', '<leader>eE', EvalToClipboard, { desc = 'Eval form to clipboard' })
   vim.keymap.set('n', "<leader>'", '<Cmd>ConjureConnect<CR>', { desc = 'Conjure Connect' })

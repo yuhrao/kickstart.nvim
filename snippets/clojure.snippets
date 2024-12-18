@@ -1,0 +1,7 @@
+snippet <portal Portal config
+
+  (require 'portal.api)
+  (defonce portal (atom nil))
+  (when (nil? @portal)
+          (reset! portal (portal.api/open {:port 8013}))
+          (add-tap #'portal.api/submit))

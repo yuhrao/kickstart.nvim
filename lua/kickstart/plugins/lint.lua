@@ -5,10 +5,31 @@ return {
     event = { 'BufReadPre', 'BufNewFile' },
     config = function()
       local lint = require 'lint'
-      lint.linters_by_ft = {
-        markdown = { 'markdownlint' },
+
+      lint.linters.markdownlint = {
+        name = 'markdownlint',
+        cmd = 'markdownlint',
+        stdin = true,
+        args = { '--stdin', '--disable', 'MD025', 'MD041', 'MD031', 'MD032', 'MD022' },
+        ignore_exitcode = true,
+        stream = 'stderr',
+        parser = require('lint.parser').from_errorformat('stdin:%l:%c %m,stdin:%l %m', {
+          source = 'markdownlint',
+          severity = vim.diagnostic.severity.WARN,
+        }),
       }
 
+      lint.linters_by_ft = {
+        markdown = { 'markdownlint' },
+        javascript = { 'eslint_d' },
+        javascriptreact = { 'eslint_d' },
+        typescript = { 'eslint_d' },
+        typescriptreact = { 'eslint_d' },
+        svelte = { 'eslint_d' },
+        clojure = { 'clj-kondo' },
+        dockerfile = { 'hadolint' },
+        json = { 'jsonlint' },
+      }
       -- To allow other plugins to add linters to require('lint').linters_by_ft,
       -- instead set linters_by_ft like this:
       -- lint.linters_by_ft = lint.linters_by_ft or {}

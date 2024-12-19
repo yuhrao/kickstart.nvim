@@ -5,6 +5,8 @@ return {
   dependencies = {
     'rafamadriz/friendly-snippets',
     { 'L3MON4D3/LuaSnip', version = 'v2.*' },
+    -- lock compat to tagged versions, if you've also locked blink.cmp to tagged versions
+    { 'saghen/blink.compat', version = '*', opts = { impersonate_nvim_cmp = true } },
   },
 
   -- use a release tag to download pre-built binaries
@@ -59,5 +61,5 @@ return {
   },
   -- allows extending the enabled_providers array elsewhere in your config
   -- without having to redefine it
-  opts_extend = { 'sources.default' },
+  opts_extend = { 'sources.completion.enabled_providers' },
 }

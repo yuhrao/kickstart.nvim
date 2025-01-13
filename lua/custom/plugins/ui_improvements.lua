@@ -47,13 +47,14 @@ return {
           mappings = {
             n = {
               ['<Esc>'] = 'Close',
+              ['q'] = 'Close',
               ['<CR>'] = 'Confirm',
             },
             i = {
               ['<C-c>'] = 'Close',
               ['<CR>'] = 'Confirm',
-              ['<Up>'] = 'HistoryPrev',
-              ['<Down>'] = 'HistoryNext',
+              ['<C-p>'] = 'HistoryPrev',
+              ['<C-n>'] = 'HistoryNext',
             },
           },
 
@@ -167,25 +168,70 @@ return {
     end,
   },
   {
-    'onsails/lspkind.nvim',
-    {
-      'NvChad/nvim-colorizer.lua',
-      opts = {
-        filetypes = { '*' },
-        user_default_options = {
-          mode = 'background',
-          tailwind = true,
-          RGB = true,
-          RRGGBB = true,
-          names = true,
-          RRGGBBAA = true,
-          rgb_fn = true,
-          hsl_fn = true,
-          css = true,
-          css_fn = true,
-        },
+    'NvChad/nvim-colorizer.lua',
+    opts = {
+      filetypes = { '*' },
+      user_default_options = {
+        mode = 'background',
+        tailwind = true,
+        RGB = true,
+        RRGGBB = true,
+        names = true,
+        RRGGBBAA = true,
+        rgb_fn = true,
+        hsl_fn = true,
+        css = true,
+        css_fn = true,
       },
     },
+  },
+  {
+    'nvim-lualine/lualine.nvim',
+    config = function()
+      require('lualine').setup {
+        options = {
+          theme = 'ayu_mirage',
+          sections = {
+            lualine_c = {
+              {
+                'filename',
+                file_status = true,
+                newfile_status = false,
+                path = 2,
+
+                shorting_target = 40,
+
+                symbols = {
+                  modified = '[+]',
+                  readonly = '[-]',
+                  unnamed = '[No Name]',
+                  newfile = '[New]',
+                },
+              },
+            },
+          },
+          inactive_sections = {
+            lualine_c = {
+              {
+                'filename',
+                file_status = true,
+                newfile_status = false,
+                path = 2,
+
+                shorting_target = 40,
+
+                symbols = {
+                  modified = '[+]',
+                  readonly = '[-]',
+                  unnamed = '[No Name]',
+                  newfile = '[New]',
+                },
+              },
+            },
+          },
+        },
+      }
+    end,
   },
   {
     'b0o/incline.nvim',

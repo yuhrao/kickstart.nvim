@@ -3,15 +3,33 @@ return {
   lazy = false, -- lazy loading handled internally
   -- optional: provides snippets for the snippet source
   dependencies = {
+    { 'echasnovski/mini.nvim', version = '*' },
     'rafamadriz/friendly-snippets',
     { 'L3MON4D3/LuaSnip', version = 'v2.*' },
-    -- lock compat to tagged versions, if you've also locked blink.cmp to tagged versions
-    { 'saghen/blink.compat', version = '*', opts = { impersonate_nvim_cmp = true } },
   },
-
-  -- use a release tag to download pre-built binaries
-  version = 'v0.*',
+  version = '*',
   opts = {
+    completion = {
+      menu = {
+        draw = {
+          components = {
+            kind_icon = {
+              ellipsis = false,
+              text = function(ctx)
+                local kind_icon, _, _ = require('mini.icons').get('lsp', ctx.kind)
+                return kind_icon
+              end,
+              -- Optionally, you may also use the highlights from mini.icons
+              highlight = function(ctx)
+                local _, hl, _ = require('mini.icons').get('lsp', ctx.kind)
+                return hl
+              end,
+            },
+          },
+        },
+      },
+    },
+
     snippets = {
       expand = function(snippet)
         require('luasnip').lsp_expand(snippet)
@@ -30,21 +48,21 @@ return {
     keymap = { preset = 'default' },
 
     appearance = {
-      -- Sets the fallback highlight groups to nvim-cmp's highlight groups
-      -- Useful for when your theme doesn't support blink.cmp
-      -- will be removed in a future release
-      use_nvim_cmp_as_default = true,
-      -- Set to 'mono' for 'Nerd Font Mono' or 'normal' for 'Nerd Font'
-      -- Adjusts spacing to ensure icons are aligned
+      use_nvim_cmp_as_default = false,
       nerd_font_variant = 'mono',
     },
 
-    -- default list of enabled providers defined so that you can extend it
-    -- elsewhere in your config, without redefining it, via `opts_extend`
     sources = {
-      completion = {
-        enabled_providers = { 'lsp', 'path', 'snippets', 'buffer', 'luasnip', 'conjure' },
+
+      default = {
+        'lsp',
+        'path',
+        'snippets',
+        'buffer',
+        'luasnip',
+        'conjure',
       },
+
       providers = {
         conjure = {
           name = 'conjure',
@@ -53,13 +71,9 @@ return {
         },
       },
     },
-
-    -- experimental auto-brackets support
-    -- completion = { accept = { auto_brackets = { enabled = true } } }
-
     signature = { enabled = true },
   },
   -- allows extending the enabled_providers array elsewhere in your config
   -- without having to redefine it
-  opts_extend = { 'sources.completion.enabled_providers' },
+  opts_extend = { 'sources.default' },
 }

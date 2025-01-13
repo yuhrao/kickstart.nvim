@@ -88,7 +88,7 @@ P.S. You can delete this when you're done too. It's your config now! :)
 -- See `:help mapleader`
 --  NOTE: Must happen before plugins are loaded (otherwise wrong leader will be used)
 vim.g.mapleader = ' '
-vim.g.maplocalleader = ' '
+vim.g.maplocalleader = ' m'
 
 -- Set to true if you have a Nerd Font installed and selected in the terminal
 vim.g.have_nerd_font = true
@@ -389,6 +389,23 @@ require('lazy').setup({
 
       -- [[ Configure Telescope ]]
       -- See `:help telescope` and `:help telescope.setup()`
+      --
+      local excluded_dirs = {
+        '.git/*',
+        '.clj-kondo/*',
+        'node_modules/*',
+        'dist/*',
+        'target/*',
+        '.next/*',
+        '.svelte-kit/*',
+      }
+
+      local rg_command = { 'rg', '--files', '--path-separator', '/' }
+      for _, dir in ipairs(excluded_dirs) do
+        table.insert(rg_command, '--glob')
+        table.insert(rg_command, '!' .. dir)
+      end
+
       require('telescope').setup {
         -- You can put your default mappings / updates / etc. in here
         --  All the info you're looking for is in `:help telescope.setup()`
@@ -404,14 +421,7 @@ require('lazy').setup({
           find_files = {
             hidden = true,
             no_ignore = true,
-            find_command = {
-              'rg',
-              '--files',
-              '--glob',
-              '!{.git/*,.next/*,.svelte-kit/*,target/*,node_modules/*}',
-              '--path-separator',
-              '/',
-            },
+            find_command = rg_command,
           },
           oldfiles = {
             hidden = true,
@@ -519,6 +529,7 @@ require('lazy').setup({
       { 'williamboman/mason.nvim', config = true }, -- NOTE: Must be loaded before dependants
       'williamboman/mason-lspconfig.nvim',
       'WhoIsSethDaniel/mason-tool-installer.nvim',
+      'saghen/blink.cmp',
 
       -- Useful status updates for LSP.
       -- NOTE: `opts = {}` is the same as calling `require('fidget').setup({})`
@@ -661,7 +672,7 @@ require('lazy').setup({
       --  By default, Neovim doesn't support everything that is in the LSP specification.
       --  When you add nvim-cmp, luasnip, etc. Neovim now has *more* capabilities.
       --  So, we create new capabilities with nvim cmp, and then broadcast that to the servers.
-      local capabilities = vim.lsp.protocol.make_client_capabilities()
+      -- local capabilities = vim.lsp.protocol.make_client_capabilities()
 
       -- Enable the following language servers
       --  Feel free to add/remove any LSPs that you want here. They will automatically be installed.
@@ -697,7 +708,7 @@ require('lazy').setup({
             ['rust-analyzer'] = {
               inlayHints = {
                 bindingModeHints = {
-                  enable = false,
+                  enable = true,
                 },
                 chainingHints = {
                   enable = true,
@@ -744,57 +755,9 @@ require('lazy').setup({
         --     },
         --   },
         -- },
-        ts_ls = {
-          settings = {
-            typescript = {
-              inlayHints = {
-                includeInlayParameterNameHints = 'all',
-                includeInlayParameterNameHintsWhenArgumentMatchesName = true,
-                includeInlayFunctionParameterTypeHints = true,
-                includeInlayVariableTypeHints = true,
-                includeInlayVariableTypeHintsWhenTypeMatchesName = true,
-                includeInlayPropertyDeclarationTypeHints = true,
-                includeInlayFunctionLikeReturnTypeHints = true,
-                includeInlayEnumMemberValueHints = true,
-              },
-            },
-            javascript = {
-              inlayHints = {
-                includeInlayParameterNameHints = 'all',
-                includeInlayParameterNameHintsWhenArgumentMatchesName = true,
-                includeInlayFunctionParameterTypeHints = true,
-                includeInlayVariableTypeHints = true,
-                includeInlayVariableTypeHintsWhenTypeMatchesName = true,
-                includeInlayPropertyDeclarationTypeHints = true,
-                includeInlayFunctionLikeReturnTypeHints = true,
-                includeInlayEnumMemberValueHints = true,
-              },
-            },
-          },
-        },
-        svelte = {
-          settings = {
-            typescript = {
-              inlayHints = {
-                parameterNames = { enabled = 'all' },
-                parameterTypes = { enabled = true },
-                variableTypes = { enabled = true },
-                propertyDeclarationTypes = { enabled = true },
-                functionLikeReturnTypes = { enabled = true },
-                enumMemberValues = { enabled = true },
-              },
-            },
-          },
-        },
+        ts_ls = {},
+        svelte = {},
         clojure_lsp = {},
-        prismals = {
-          root_dir = require('lspconfig.util').root_pattern('.git', 'package.json', 'Cargo.toml'),
-          settings = {
-            prisma = {
-              prismaFmtBinPath = 'bunx prisma',
-            },
-          },
-        },
         html = {},
         tailwindcss = {},
         sqls = {},
@@ -816,7 +779,6 @@ require('lazy').setup({
         lua_ls = {
           -- cmd = {...},
           -- filetypes = { ...},
-          -- capabilities = {},
           settings = {
             Lua = {
               hint = { enable = true },
@@ -872,15 +834,12 @@ require('lazy').setup({
       require('mason-tool-installer').setup { ensure_installed = ensure_installed }
 
       require('mason-lspconfig').setup {
-        ensure_installed = ensure_installed,
-        automatic_installation = true,
+        ensure_installed = {},
+        automatic_installation = false,
         handlers = {
           function(server_name)
             local server = servers[server_name] or {}
-            -- This handles overriding only values explicitly passed
-            -- by the server configuration above. Useful when disabling
-            -- certain features of an LSP (for example, turning off formatting for ts_ls)
-            server.capabilities = require('blink.cmp').get_lsp_capabilities(capabilities)
+            server.capabilities = require('blink.cmp').get_lsp_capabilities(server.capabilities, true)
             require('lspconfig')[server_name].setup(server)
           end,
         },

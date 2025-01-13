@@ -1,6 +1,18 @@
 local thm = require 'lib.themes'
 return {
   -- Set high priority for all theme plugins
+  { 'EdenEast/nightfox.nvim' },
+  {
+    'scottmckendry/cyberdream.nvim',
+    lazy = false,
+    priority = 10000,
+    config = function()
+      require('cyberdream').setup {
+        transparent = true,
+        cache = false,
+      }
+    end,
+  },
   { 'adamkali/vaporlush', dependencies = { 'rktjmp/lush.nvim' }, priority = 10000, lazy = false },
   { 'catppuccin/nvim', name = 'catppuccin', priority = 10000, lazy = false },
   { 'arcticicestudio/nord-vim', priority = 10000, lazy = false },

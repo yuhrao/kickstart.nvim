@@ -29,8 +29,8 @@ clj.config = function()
   require('conjure.mapping')['on-filetype']()
   local client = require 'conjure.client'
 
-  vim.keymap.set('n', '<leader>eE', EvalToClipboard, { desc = 'Eval form to clipboard' })
-  vim.keymap.set('n', "<leader>'", '<Cmd>ConjureConnect<CR>', { desc = 'Conjure Connect' })
+  vim.keymap.set('n', '<localleader>eE', EvalToClipboard, { desc = 'Eval form to clipboard' })
+  vim.keymap.set('n', "<localleader>'", '<Cmd>ConjureConnect<CR>', { desc = 'Conjure Connect' })
 end
 
 clj.setup_baleia = function()
@@ -59,6 +59,12 @@ clj.enable_colorizer = function()
   })
 end
 
+clj.keymaps = function()
+  vim.g['conjure#client#clojure#nrepl#mapping#session_fresh'] = 'rf'
+  vim.g['conjure#client#clojure#nrepl#mapping#run_current_test'] = 'te'
+  vim.g['conjure#mapping#eval_visual'] = 'e'
+end
+
 clj.init = function()
   clj.enable_colorizer()
 
@@ -72,9 +78,7 @@ clj.init = function()
   vim.g['conjure#highlight#enabled'] = true
   vim.g['conjure#client#clojure#nrepl#completion#with_context'] = true -- Testing it out put false if something breaks
 
-  vim.g['conjure#client#clojure#nrepl#mapping#session_fresh'] = 'rf'
-  vim.g['conjure#client#clojure#nrepl#mapping#run_current_test'] = 'te'
-  vim.g['conjure#mapping#eval_visual'] = 'e'
+  clj.keymaps()
 end
 
 return clj

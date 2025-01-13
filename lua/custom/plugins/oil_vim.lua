@@ -22,6 +22,9 @@ return {
   },
   -- Optional dependencies
   dependencies = { 'nvim-tree/nvim-web-devicons' },
+  keys = {
+    { '-', ':Oil<CR>', { desc = 'Oil reveal' } },
+  },
   config = function()
     require('oil').setup {
       delete_to_trash = true,

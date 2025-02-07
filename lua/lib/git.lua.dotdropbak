@@ -12,6 +12,8 @@ g.setup_keymap = function(neogit, gitlinker)
     neogit.open()
   end, { noremap = true, silent = true, desc = '[S]tatus' })
 
+  vim.keymap.set('n', '<leader>gb', ':Telescope git_branches<CR>', { noremap = true, silent = true, desc = '[B]ranches' })
+
   vim.keymap.set('n', '<leader>gy', function()
     gitlinker.get_buf_range_url 'n'
   end, { noremap = true, silent = true, desc = '[G]it [Y]ank git URL' })
@@ -19,6 +21,7 @@ end
 
 g.setup_worktree = function()
   require('git-worktree').setup()
+  require('telescope').load_extension 'git_worktree'
 end
 
 g.setup = function()

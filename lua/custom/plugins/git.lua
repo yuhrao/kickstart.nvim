@@ -2,9 +2,6 @@ local git = require 'lib.git'
 return {
   {
     'ThePrimeagen/git-worktree.nvim',
-    dependencies = {
-      'nvim-telescope/telescope.nvim', -- optional
-    },
     config = git.setup_worktree,
   },
   {
@@ -12,7 +9,6 @@ return {
     cmd = 'Octo',
     dependencies = {
       'nvim-lua/plenary.nvim',
-      'nvim-telescope/telescope.nvim',
       'nvim-tree/nvim-web-devicons',
     },
     config = function()

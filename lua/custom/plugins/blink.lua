@@ -7,8 +7,9 @@ return {
     'onsails/lspkind.nvim',
     'rafamadriz/friendly-snippets',
     { 'L3MON4D3/LuaSnip', version = 'v2.*' },
+    'neovim/nvim-lspconfig',
   },
-  version = '*',
+  commit = 'df89cf7', -- Pinning to a specific commit to avoid breaking changes
   config = function()
     local blink = require 'blink.cmp'
     local lspkind = require 'lspkind'
@@ -78,17 +79,6 @@ return {
             name = 'conjure',
             module = 'lib.blink.conjure',
             opts = {},
-          },
-          lsp = {
-            name = 'lsp',
-            module = 'blink.cmp.source.lsp',
-            opts = {
-              -- Additional LSP configuration options
-              -- Trigger completion after typing this many characters
-              keyword_length = 1, 
-              -- Show LSP snippets
-              use_snippets = true,
-            },
           },
         },
       },

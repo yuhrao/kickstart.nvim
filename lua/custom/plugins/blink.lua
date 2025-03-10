@@ -17,8 +17,8 @@ return {
     -- Load friendly-snippets
     require('luasnip.loaders.from_vscode').lazy_load()
 
-    -- Load custom snippets
-    require('luasnip.loaders.from_snipmate').lazy_load { paths = { vim.fn.expand '~' .. '/.config/nvim/snippets' } }
+    -- Load our custom LuaSnip snippets
+    require('snippets').setup()
 
     blink.setup {
       cmdline = {

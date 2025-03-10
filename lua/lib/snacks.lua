@@ -38,6 +38,46 @@ modules.explorer = {
   config = {
     enabled = true,
     replace_netrw = true,
+    win = {
+      list = {
+        keys = {
+          ['W'] = {
+            function(state)
+              -- Get the selected item
+              local item = state:get_item()
+              if not item then
+                return
+              end
+
+              -- Only proceed if it's a file (not a directory)
+              if item.type == 'file' then
+                -- Use window picker to select a window
+                local window_picker = require 'window-picker'
+                local picked_window_id = window_picker.pick_window {
+                  include_current_win = false,
+                } or vim.api.nvim_get_current_win()
+
+                if picked_window_id then
+                  -- Save current window to return to explorer after opening file
+                  local current_win = vim.api.nvim_get_current_win()
+
+                  -- Switch to the selected window
+                  vim.api.nvim_set_current_win(picked_window_id)
+
+                  -- Open the file in this window
+                  vim.cmd('edit ' .. vim.fn.fnameescape(item.path))
+
+                  -- Return focus to explorer window
+                  vim.api.nvim_set_current_win(current_win)
+                end
+              end
+            end,
+            mode = 'n',
+            desc = 'Open in selected window',
+          },
+        },
+      },
+    },
   },
   keymaps = {
     {
@@ -56,7 +96,40 @@ modules.explorer = {
 modules.picker = {
   config = {
     enabled = true,
-    sources = { explorer = {} },
+    sources = {
+      explorer = {
+        -- This configuration overrides the default key mappings for the explorer source.
+        -- We merge in our custom keys along with the default ones.
+        win = {
+          list = {
+            keys = {
+              ['<BS>'] = 'explorer_up',
+              ['l'] = 'confirm',
+              ['h'] = 'explorer_close', -- close directory
+              ['a'] = 'explorer_add',
+              ['d'] = 'explorer_del',
+              ['r'] = 'explorer_rename',
+              ['c'] = 'explorer_copy',
+              ['m'] = 'explorer_move',
+              ['o'] = 'explorer_open', -- open with system application
+              ['P'] = 'toggle_preview',
+              ['y'] = 'explorer_yank',
+              ['u'] = 'explorer_update',
+              ['<c-c>'] = 'tcd',
+              ['.'] = 'explorer_focus',
+              ['I'] = 'toggle_ignored',
+              ['H'] = 'toggle_hidden',
+              ['Z'] = 'explorer_close_all',
+              [']g'] = 'explorer_git_next',
+              ['[g'] = 'explorer_git_prev',
+              -- Custom mappings:
+              ['S'] = { 'edit_split', mode = { 'n', 'i' }, desc = 'Open file in horizontal split' },
+              ['s'] = { 'edit_vsplit', mode = { 'n', 'i' }, desc = 'Open file in vertical split' },
+            },
+          },
+        },
+      },
+    },
   },
   keymaps = {
     history = {

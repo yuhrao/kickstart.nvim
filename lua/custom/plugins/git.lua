@@ -1,5 +1,6 @@
 local git = require 'lib.git'
 return {
+  { 'f-person/git-blame.nvim', opts = { enable = false } },
   {
     'ThePrimeagen/git-worktree.nvim',
     config = git.setup_worktree,

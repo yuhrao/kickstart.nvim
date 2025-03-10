@@ -2,7 +2,7 @@ local t = {}
 
 local dark_themes = {
   -- Existing dark themes
-  'vaporlush',
+  -- 'vaporlush',
   'catppuccin',
   -- 'srcery',
   'embark',
@@ -16,7 +16,7 @@ local dark_themes = {
   'github_dark_dimmed',
   'tokyonight-moon',
   'tokyonight-night',
-  'ayu-mirage',
+  -- 'ayu-mirage',
   -- 'pinkmare',
   -- 'gruvbox',
   -- 'everforest',

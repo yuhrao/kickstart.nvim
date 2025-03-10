@@ -15,9 +15,15 @@ return {
     require('luasnip.loaders.from_snipmate').lazy_load { paths = { vim.fn.expand '~' .. '/.config/nvim/snippets' } }
 
     blink.setup {
+      cmdline = {
+        enabled = true,
+      },
 
       snippets = { preset = 'luasnip' },
       completion = {
+        documentation = {
+          auto_show = true,
+        },
         menu = {
           draw = {
             components = {

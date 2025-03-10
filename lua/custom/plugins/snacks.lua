@@ -3,6 +3,7 @@ return {
   'folke/snacks.nvim',
   priority = 1000,
   dependencies = {
+    's1n7ax/nvim-window-picker',
     'nvim-neo-tree/neo-tree.nvim',
   },
   lazy = false,

@@ -9,14 +9,14 @@ return {
     { 'L3MON4D3/LuaSnip', version = 'v2.*' },
     'neovim/nvim-lspconfig',
   },
-  commit = 'df89cf7', -- Pinning to a specific commit to avoid breaking changes
+  commit = '*',
   config = function()
     local blink = require 'blink.cmp'
     local lspkind = require 'lspkind'
 
     -- Load friendly-snippets
     require('luasnip.loaders.from_vscode').lazy_load()
-    
+
     -- Load custom snippets
     require('luasnip.loaders.from_snipmate').lazy_load { paths = { vim.fn.expand '~' .. '/.config/nvim/snippets' } }
 
@@ -78,7 +78,13 @@ return {
           conjure = {
             name = 'conjure',
             module = 'lib.blink.conjure',
-            opts = {},
+            opts = {
+              prefix_min_len = 2, -- Minimum length to trigger Conjure completions
+              filetype_filter = {
+                -- Only enable in Clojure and ClojureScript files
+                include = { "clojure", "clojurescript" },
+              },
+            },
           },
         },
       },

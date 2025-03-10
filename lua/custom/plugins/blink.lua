@@ -1,6 +1,7 @@
 return {
   'saghen/blink.cmp',
   lazy = false, -- lazy loading handled internally
+  priority = 100, -- Load before LSP config to ensure capabilities are available
   -- optional: provides snippets for the snippet source
   dependencies = {
     'onsails/lspkind.nvim',
@@ -12,6 +13,10 @@ return {
     local blink = require 'blink.cmp'
     local lspkind = require 'lspkind'
 
+    -- Load friendly-snippets
+    require('luasnip.loaders.from_vscode').lazy_load()
+    
+    -- Load custom snippets
     require('luasnip.loaders.from_snipmate').lazy_load { paths = { vim.fn.expand '~' .. '/.config/nvim/snippets' } }
 
     blink.setup {
@@ -60,7 +65,6 @@ return {
       },
 
       sources = {
-
         default = {
           'lsp',
           'path',
@@ -74,6 +78,17 @@ return {
             name = 'conjure',
             module = 'lib.blink.conjure',
             opts = {},
+          },
+          lsp = {
+            name = 'lsp',
+            module = 'blink.cmp.source.lsp',
+            opts = {
+              -- Additional LSP configuration options
+              -- Trigger completion after typing this many characters
+              keyword_length = 1, 
+              -- Show LSP snippets
+              use_snippets = true,
+            },
           },
         },
       },

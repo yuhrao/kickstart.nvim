@@ -11,6 +11,92 @@ local rep = require('luasnip.extras').rep
 local fmta = require('luasnip.extras.fmt').fmta
 
 local react_snippets = {
+  -- React Server Component (RSC)
+  s(
+    'rsc',
+    fmt(
+      [[
+// This is a React Server Component
+export default async function {}({}) {{
+  // Server-side data fetching
+  {}
+
+  return (
+    <div>
+      {}
+    </div>
+  )
+}}
+]],
+      {
+        i(1, 'ServerComponent'),
+        i(2, 'props'),
+        i(3, '// Fetch your data directly in the component'),
+        i(4, '// Render with server data'),
+      }
+    )
+  ),
+
+  -- useFormStatus hook for form validation (React 18+)
+  s(
+    'formstatus',
+    fmt(
+      [[
+'use client'
+
+import {{ useFormStatus }} from 'react-dom'
+
+function SubmitButton() {{
+  const {{ pending }} = useFormStatus()
+  
+  return (
+    <button type="submit" disabled={{pending}}>
+      {{pending ? '{}'  : '{}'}}
+    </button>
+  )
+}}
+]],
+      {
+        i(1, 'Submitting...'),
+        i(2, 'Submit'),
+      }
+    )
+  ),
+
+  -- React useFormState for form management
+  s(
+    'formstate',
+    fmt(
+      [[
+'use client'
+
+import {{ useFormState }} from 'react-dom'
+import {{ useRef }} from 'react'
+
+// Server action
+{}
+
+function {}() {{
+  const [state, formAction] = useFormState({}, null)
+  const formRef = useRef<HTMLFormElement>(null)
+  
+  return (
+    <form ref={{formRef}} action={{formAction}}>
+      {{state?.error && <p className="error">{{state.error}}</p>}}
+      {}
+      <button type="submit">{}</button>
+    </form>
+  )
+}}
+]],
+      {
+        i(1, "async function handleSubmit(prevState: any, formData: FormData) {\n  'use server'\n  // Process the form data\n  const value = formData.get('value')\n  \n  // Validate and return state\n  if (!value) return { error: 'Value is required' }\n  \n  // Process data...\n  return { success: true }\n}"),
+        i(2, 'FormComponent'),
+        i(3, '// Form inputs'),
+        i(4, 'Submit'),
+      }
+    )
+  ),
   -- Functional component
   s(
     'rfc',
@@ -167,6 +253,62 @@ const {} = useMemo(() => {{
         i(2, '// computation'),
         i(3, 'result'),
         i(4, 'dependencies'),
+      }
+    )
+  ),
+
+  -- Hook: useDeferredValue (React 18+)
+  s(
+    'usedeferred',
+    fmt(
+      [[
+const {} = useDeferredValue({})
+]],
+      {
+        i(1, 'deferredValue'),
+        i(2, 'value')
+      }
+    )
+  ),
+
+  -- Hook: useTransition (React 18+)
+  s(
+    'usetrans',
+    fmt(
+      [[
+const [isPending, startTransition] = useTransition()
+
+const handle{} = () => {{
+  startTransition(() => {{
+    {}
+  }})
+}}
+]],
+      {
+        i(1, 'Click'),
+        i(2, '// state update')
+      }
+    )
+  ),
+
+  -- React.lazy with Suspense (modern code splitting)
+  s(
+    'lazy',
+    fmt(
+      [[
+import {{ lazy, Suspense }} from 'react'
+
+const {} = lazy(() => import('{}'))
+
+// Usage with Suspense:
+// <Suspense fallback={<div>Loading...</div>}>
+//   <{} />
+// </Suspense>
+]],
+      {
+        i(1, 'Component'),
+        i(2, './components/Component'),
+        rep(1)
       }
     )
   ),
@@ -363,47 +505,78 @@ export function use{}({}) {{
     )
   ),
 
-  -- Error boundary
+  -- Modern Error Boundary using React 18's useErrorBoundary
   s(
     'errb',
     fmt(
       [[
-import {{ Component, ErrorInfo, ReactNode }} from 'react'
+import {{ useState, useCallback, useContext, createContext, ReactNode }} from 'react'
 
 interface ErrorBoundaryProps {{
   children: ReactNode
-  fallback?: ReactNode
+  fallback: React.ComponentType<{{ error: Error; reset: () => void }}>
 }}
 
-interface ErrorBoundaryState {{
-  hasError: boolean
-  error?: Error
+export default function ErrorBoundary({{ children, fallback: Fallback }}: ErrorBoundaryProps) {{
+  const [error, setError] = useState<Error | null>(null)
+  
+  const reset = useCallback(() => {{
+    setError(null)
+  }}, [])
+  
+  const handleError = useCallback((error: Error) => {{
+    console.error("Error caught by ErrorBoundary:", error)
+    setError(error)
+  }}, [])
+  
+  if (error) {{
+    return <Fallback error={{error}} reset={{reset}} />
+  }}
+  
+  return (
+    <ErrorBoundaryContext.Provider value={{handleError}}>
+      {{children}}
+    </ErrorBoundaryContext.Provider>
+  )
 }}
 
-class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {{
-  constructor(props: ErrorBoundaryProps) {{
-    super(props)
-    this.state = {{ hasError: false }}
-  }}
+// Create context for error handling
+const ErrorBoundaryContext = 
+  createContext<(error: Error) => void>(() => {{}})
 
-  static getDerivedStateFromError(error: Error) {{
-    return {{ hasError: true, error }}
-  }}
-
-  componentDidCatch(error: Error, errorInfo: ErrorInfo) {{
-    console.error("Error caught by ErrorBoundary:", error, errorInfo)
-  }}
-
-  render() {{
-    if (this.state.hasError) {{
-      return this.props.fallback || <div>Something went wrong.</div>
-    }}
-
-    return this.props.children
-  }}
+// Hook to consume the error boundary context
+export function useErrorBoundary() {{
+  return useContext(ErrorBoundaryContext)
 }}
 
-export default ErrorBoundary
+// Example usage:
+// <ErrorBoundary fallback={{({error, reset}) => (
+//   <div>
+//     <p>Something went wrong: {{error.message}}</p>
+//     <button onClick={{reset}}>Try again</button>
+//   </div>
+// )}}>
+//   <YourComponent />
+// </ErrorBoundary>
+]],
+      {}
+    )
+  ),
+
+  -- Simple Error Fallback Component  
+  s(
+    'errfallback',
+    fmt(
+      [[
+function ErrorFallback({{ error, reset }}: {{ error: Error; reset: () => void }}) {{
+  return (
+    <div role="alert" className="error-boundary">
+      <h2>Something went wrong</h2>
+      <pre>{{error.message}}</pre>
+      <button onClick={{reset}}>Try again</button>
+    </div>
+  )
+}}
 ]],
       {}
     )
@@ -457,8 +630,34 @@ export const {} = ({{ onSubmit }}: {}Props) => {{
   ),
 }
 
+-- Add snippets to various filetypes
 ls.add_snippets('javascriptreact', react_snippets)
 ls.add_snippets('typescriptreact', react_snippets)
+
+-- React Server Component filetypes (for Next.js App Router)
+ls.add_snippets('typescript', {
+  s(
+    'useserver',
+    fmt(
+      [[
+'use server'
+
+export async function {}({}): Promise<{}> {{
+  {}
+  
+  return {}
+}}
+]],
+      {
+        i(1, 'serverAction'),
+        i(2, 'formData: FormData'),
+        i(3, '{ success: boolean, error?: string }'),
+        i(4, '// Server-side logic'),
+        i(5, '{ success: true }'),
+      }
+    )
+  ),
+})
 
 -- Additional TSX-specific snippets
 ls.add_snippets('typescriptreact', {
@@ -532,7 +731,65 @@ export default {}
       i(4, '// event handler logic'),
     })
   ),
-})
+  
+  -- useId hook for accessibility (React 18+)
+  s(
+    'useid',
+    fmt(
+      [[
+const {} = useId()
+// Usage: id={{{}}}, aria-labelledby={{{}}}-label, etc.
+]],
+      {
+        i(1, 'id'),
+        rep(1),
+        rep(1),
+      }
+    )
+  ),
+  
+  -- useSyncExternalStore hook (React 18+)
+  s(
+    'usesync',
+    fmt(
+      [[
+import {{ useSyncExternalStore }} from 'react'
+
+function use{}() {{
+  const {} = useSyncExternalStore(
+    {}.subscribe,
+    {}.getSnapshot,
+    {}.getServerSnapshot
+  )
+  
+  return {}
+}}
+]],
+      {
+        i(1, 'ExternalStore'),
+        i(2, 'value'),
+        i(3, 'externalStore'),
+        rep(3),
+        rep(3),
+        rep(2),
+      }
+    )
+  ),
+
+  -- React.use hook for promises in components (React 18+)
+  s(
+    'reactuse',
+    fmt(
+      [[
+// For use inside components with promises from parent
+const data = use({})
+]],
+      {
+        i(1, 'somePromise'),
+      }
+    )
+  ),
+}
 
 return {}
 

@@ -11,6 +11,198 @@ local rep = require("luasnip.extras").rep
 
 -- These snippets are shared for both JS and TS
 local nextjs_snippets = {
+  -- Next.js App Directory - Client Component
+  s("nclient", fmt([[
+'use client'
+
+{}
+
+export default function {}({}) {{
+  return (
+    <div>
+      {}
+    </div>
+  )
+}}
+]], {
+    i(1, "import { useState } from 'react'"),
+    i(2, "Component"),
+    i(3, "props"),
+    i(4, "// component content"),
+  })),
+
+  -- Next.js App Directory - Server Component
+  s("nserver", fmt([[
+{}
+
+export default async function {}({}) {{
+  {}
+
+  return (
+    <div>
+      {}
+    </div>
+  )
+}}
+]], {
+    i(1, "// server-side imports"),
+    i(2, "Component"),
+    i(3, "props"),
+    i(4, "// server-side data fetching"),
+    i(5, "// component content"),
+  })),
+
+  -- Next.js Data Fetching in Server Component
+  s("nfetch", fmt([[
+// Data Fetching in Server Component
+async function getData() {{
+  {}
+  
+  // Using fetch with next.js cache settings
+  const res = await fetch('{}', {{ 
+    next: {{ 
+      revalidate: {} // false | 0 | number in seconds
+    }} 
+  }})
+  
+  if (!res.ok) {{
+    throw new Error('Failed to fetch data')
+  }}
+  
+  return res.json()
+}}
+
+export default async function {}() {{
+  const data = await getData()
+  
+  return (
+    <>
+      {}
+    </>
+  )
+}}
+]], {
+    i(1, "// fetch configuration"),
+    i(2, "https://api.example.com/data"),
+    i(3, "60"),
+    i(4, "Component"),
+    i(5, "// render with data"),
+  })),
+
+  -- Next.js Route Handlers (API)
+  s("nroute", fmt([[
+// app/api/{}route.js
+export async function GET(request: Request) {{
+  const {{ searchParams }} = new URL(request.url)
+  const id = searchParams.get('id')
+  
+  {}
+  
+  return Response.json({{ {} }})
+}}
+
+export async function POST(request: Request) {{
+  const data = await request.json()
+  
+  {}
+  
+  return new Response(JSON.stringify({{ success: true }}), {{
+    headers: {{ 'Content-Type': 'application/json' }}
+  }})
+}}
+]], {
+    i(1, "example/"),
+    i(2, "// handle GET logic"),
+    i(3, "data: 'value'"),
+    i(4, "// handle POST logic"),
+  })),
+
+  -- Next.js Metadata for App Router
+  s("nmeta", fmt([[
+export const metadata = {{
+  title: '{}',
+  description: '{}',
+  openGraph: {{
+    title: '{}',
+    description: '{}',
+    images: ['{}'],
+  }},
+}}
+]], {
+    i(1, "Page Title"),
+    i(2, "Page description"),
+    rep(1),
+    rep(2),
+    i(3, "/images/og-image.jpg"),
+  })),
+
+  -- Next.js Dynamic Metadata
+  s("nmetagen", fmt([[
+export async function generateMetadata({{ params, searchParams }}: {{
+  params: {{ {} }},
+  searchParams: {{ [key: string]: string | string[] | undefined }}
+}}) {{
+  const id = params.{}
+  
+  // Fetch data
+  const product = await fetch('{}').then((res) => res.json())
+  
+  return {{
+    title: product.title,
+    description: product.description,
+  }}
+}}
+]], {
+    i(1, "id: string"),
+    i(2, "id"),
+    i(3, `https://api.example.com/product/$\{id\}`),
+  })),
+
+  -- Next.js Loading State (App Router)
+  s("nloading", fmt([[
+// app/{}/loading.tsx
+export default function Loading() {{
+  return (
+    <div className="loading-container">
+      {}
+    </div>
+  )
+}}
+]], {
+    i(1, "[slug]"),
+    i(2, "// loading UI"),
+  })),
+
+  -- Next.js Error Handling (App Router)
+  s("nerror", fmt([[
+'use client'
+
+import {{ useEffect }} from 'react'
+
+export default function Error({{
+  error,
+  reset,
+}}: {{
+  error: Error & {{ digest?: string }},
+  reset: () => void,
+}}) {{
+  useEffect(() => {{
+    // Log the error to an error reporting service
+    console.error(error)
+  }}, [error])
+
+  return (
+    <div className="error-container">
+      <h2>Something went wrong!</h2>
+      <button
+        onClick={() => reset()}
+      >
+        Try again
+      </button>
+    </div>
+  )
+}}
+]], {}))),
   -- Next.js Page Component
   s("npage", fmt([[
 import type {{ NextPage }} from 'next'

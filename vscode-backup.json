@@ -1,0 +1,346 @@
+
+{
+  // ==========================================
+  // VIM CONFIGURATION
+  // ==========================================
+  "vim.surround": true,
+  "vim.leader": "<space>",
+  "vim.useSystemClipboard": true,
+  "vim.hlsearch": true,
+  "vim.incsearch": true,
+  "vim.showcmd": true,
+  "vim.useCtrlKeys": true,
+  "editor.cursorSurroundingLines": 10,
+  "vim.smartRelativeLine": true,
+  "vim.highlightedyank.enable": true,
+
+  // Vim Normal Mode Keybindings
+  "vim.normalModeKeyBindingsNonRecursive": [
+    // File Navigation
+    {
+      "before": ["<leader>", "s", "f"],
+      "commands": ["workbench.action.quickOpen"]
+    },
+
+    // Code Navigation
+    {
+      "before": ["shift+k"],
+      "commands": ["editor.action.showHover"]
+    },
+    {
+      "before": ["g", "r"],
+      "commands": ["editor.action.referenceSearch.trigger"]
+    },
+    {
+      "before": ["g", "i"],
+      "commands": ["editor.action.goToImplementation"]
+    },
+
+    // Code Actions
+    {
+      "before": ["<leader>", "r", "n"],
+      "commands": ["editor.action.rename"]
+    },
+
+    // Pane Navigation
+    {
+      "before": ["<C-h>"],
+      "commands": ["workbench.action.navigateLeft"]
+    },
+    {
+      "before": ["<C-j>"],
+      "commands": ["workbench.action.navigateDown"]
+    },
+    {
+      "before": ["<C-k>"],
+      "commands": ["workbench.action.navigateUp"]
+    },
+    {
+      "before": ["<C-l>"],
+      "commands": ["workbench.action.navigateRight"]
+    },
+
+    // UI Toggle
+    {
+      "before": ["\\"],
+      "commands": ["workbench.action.toggleSidebarVisibility"]
+    },
+
+    // Error Navigation
+    {
+      "before": ["<leader>", "e", "n"],
+      "commands": ["editor.action.marker.next"]
+    },
+    {
+      "before": ["<leader>", "e", "p"],
+      "commands": ["editor.action.marker.prev"]
+    },
+
+    // Calva (Clojure)
+    {
+      "before": ["<leader>", "e", "e"],
+      "commands": ["cursorRight", "calva.evaluateSelection"]
+    }
+  ],
+
+  // // Vim Insert Mode Keybindings
+  "vim.insertModeKeyBindings": [
+    {
+      "before": ["<C-y>"],
+      "commands": [
+        {
+          "command": "acceptSelectedSuggestion",
+          "when": "suggestWidgetVisible && textInputFocus"
+        }
+      ]
+    }
+  ],
+
+  // ==========================================
+  // EDITOR APPEARANCE & BEHAVIOR
+  // ==========================================
+
+  // Font Settings
+  "editor.fontSize": 14,
+  "editor.fontFamily": "'FiraMono Nerd Font Propo', 'FiraCode Nerd Font Mono'",
+  "editor.fontLigatures": true,
+  "editor.lineHeight": 2.0,
+
+  // Editor Display
+  "editor.tabSize": 2,
+  "editor.lineNumbers": "relative",
+  "editor.minimap.enabled": false,
+  "editor.bracketPairColorization.enabled": true,
+  "editor.guides.bracketPairs": "active",
+  "editor.stickyScroll.enabled": true,
+  "editor.renderLineHighlight": "none",
+  "editor.renderWhitespace": "none",
+  "editor.showFoldingControls": "never",
+
+  // Editor Features
+  "editor.detectIndentation": false,
+  "editor.colorDecorators": false,
+  "editor.codeLens": false,
+  "editor.links": false,
+  "editor.matchBrackets": "never",
+  "editor.parameterHints.enabled": false,
+  "editor.lightbulb.enabled": "off",
+  "editor.snippetSuggestions": "top",
+  "editor.accessibilitySupport": "off",
+
+  // Scrollbars
+  "editor.scrollbar.horizontal": "hidden",
+  "editor.scrollbar.vertical": "hidden",
+  "editor.overviewRulerBorder": false,
+  "editor.hideCursorInOverviewRuler": true,
+
+  // File Handling
+  "files.trimTrailingWhitespace": true,
+  "files.insertFinalNewline": true,
+  "files.associations": {
+    ".env*": "dotenv"
+  },
+
+  // ==========================================
+  // FORMATTING & LINTING
+  // ==========================================
+
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+
+  // Language-specific formatters
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[javascriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[sql]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[markdown]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[go]": {
+    "editor.defaultFormatter": "golang.go",
+    "editor.formatOnSave": true
+  },
+  "[clojure]": {
+    "editor.defaultFormatter": "betterthantomorrow.calva"
+  },
+
+  // ESLint Configuration
+  "eslint.enable": true,
+  "eslint.validate": [
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact"
+  ],
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
+
+  // ==========================================
+  // WORKBENCH & UI
+  // ==========================================
+
+  // Theme
+  "workbench.colorTheme": "Catppuccin Mocha",
+  "workbench.iconTheme": "catppuccin-mocha",
+
+  // Layout
+  "workbench.activityBar.location": "hidden",
+  "workbench.sideBar.location": "right",
+  "workbench.editor.showTabs": "single",
+  "workbench.panel.showLabels": false,
+  "breadcrumbs.enabled": false,
+
+  // Explorer
+  "explorer.compactFolders": false,
+  "explorer.confirmDragAndDrop": false,
+  "explorer.confirmDelete": false,
+  "explorer.decorations.badges": false,
+
+  // Tree View
+  "workbench.tree.enableStickyScroll": false,
+  "workbench.tree.renderIndentGuides": "none",
+  "workbench.tree.indent": 8,
+  "material-icon-theme.hidesExplorerArrows": true,
+
+  // Window
+  "window.restoreWindows": "none",
+  "window.zoomLevel": 0,
+  "window.customTitleBarVisibility": "never",
+  "window.titleBarStyle": "custom",
+
+  // Misc UI
+  "workbench.tips.enabled": false,
+  "extensions.ignoreRecommendations": true,
+
+  // Color Customizations
+  "workbench.colorCustomizations": {
+    "[Dracula Pro*]": {
+      "scmGraph.historyItemHoverLabelForeground": "#22212C"
+    },
+    "[Dracula Pro (Van Helsing)]": {
+      "panel.border": "#708CA988",
+      "editorGroup.border": "#708CA988",
+      "sideBar.border": "#708CA988"
+    },
+    "statusBar.background": "#005f5f",
+    "statusBar.noFolderBackground": "#005f5f",
+    "statusBar.debuggingBackground": "#005f5f",
+    "statusBar.foreground": "#ffffff",
+    "statusBar.debuggingForeground": "#ffffff"
+  },
+
+  // Token Color Customizations
+  "editor.tokenColorCustomizations": {
+    "textMateRules": [
+      {
+        "scope": "comment",
+        "settings": {
+          "fontStyle": "italic"
+        }
+      }
+    ]
+  },
+
+  // ==========================================
+  // GIT & SOURCE CONTROL
+  // ==========================================
+
+  "git.decorations.enabled": false,
+  "git.openRepositoryInParentFolders": "always",
+  "scm.diffDecorations": "none",
+  "gitlens.graph.minimap.enabled": false,
+
+  // Diff Editor
+  "diffEditor.ignoreTrimWhitespace": false,
+  "diffEditor.hideUnchangedRegions.enabled": true,
+
+  // ==========================================
+  // LANGUAGE SUPPORT
+  // ==========================================
+
+  // TypeScript/JavaScript
+  "typescript.updateImportsOnFileMove.enabled": "always",
+  "javascript.updateImportsOnFileMove.enabled": "always",
+
+  // Svelte
+  "svelte.enable-ts-plugin": true,
+
+  // Emmet
+  "emmet.triggerExpansionOnTab": true,
+
+  // Calva (Clojure)
+  "calva.prettyPrintingOptions": {
+    "printEngine": "pprint",
+    "enabled": false,
+    "width": 120,
+    "maxLength": 50
+  },
+  "calva.paredit.defaultKeyMap": "original",
+
+  // ==========================================
+  // EXTENSIONS
+  // ==========================================
+
+  // TODO Highlight
+  "todohighlight.keywords": [
+    {
+      "text": "QUESTION:",
+      "color": "#1F1F1F",
+      "backgroundColor": "#FFFF80",
+      "overviewRulerColor": "grey"
+    },
+    {
+      "text": "NOTE:",
+      "color": "#1F1F1F",
+      "backgroundColor": "#F8F8F2",
+      "overviewRulerColor": "grey"
+    },
+    {
+      "text": "HACK:",
+      "color": "#1F1F1F",
+      "backgroundColor": "#FFCA80",
+      "overviewRulerColor": "grey"
+    }
+  ],
+
+  // DotENV
+  "dotenv.enableAutocloaking": false,
+
+  // Notebook
+  "notebook.stickyScroll.enabled": true,
+
+  // ==========================================
+  // CURSOR-SPECIFIC SETTINGS
+  // ==========================================
+
+  "cursor.composer.shouldChimeAfterChatFinishes": true,
+  "cursor.general.globalCursorIgnoreList": [
+    "**/credentials.json",
+    "**/credentials.*.json",
+    "**/secret.json",
+    "**/secrets.json",
+    "**/*.key",
+    "**/*.pem",
+    "**/*.pfx",
+    "**/*.p12",
+    "**/*.crt",
+    "**/*.cer",
+    "**/id_rsa",
+    "**/id_dsa",
+    "**/.ssh/id_*",
+    "**/.env",
+    "**/.env.*"
+  ]
+}

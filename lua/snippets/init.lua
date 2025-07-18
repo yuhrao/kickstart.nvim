@@ -18,8 +18,6 @@ ls.config.set_config {
 require 'snippets.clojure'
 require 'snippets.javascript'
 require 'snippets.typescript'
-require 'snippets.react'
-require 'snippets.nextjs'
 
 -- Key mappings function for use in keymaps
 local function luasnip_keymaps()
@@ -53,4 +51,3 @@ return {
     luasnip_keymaps()
   end,
 }
-

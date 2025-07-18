@@ -11,7 +11,7 @@ return {
   },
   commit = '*',
   config = function()
-    local blink = require 'blink.cmp'
+    local blink = require 'blink-cmp'
     local lspkind = require 'lspkind'
 
     -- Load friendly-snippets
@@ -82,7 +82,7 @@ return {
               prefix_min_len = 2, -- Minimum length to trigger Conjure completions
               filetype_filter = {
                 -- Only enable in Clojure and ClojureScript files
-                include = { "clojure", "clojurescript" },
+                include = { 'clojure', 'clojurescript' },
               },
             },
           },

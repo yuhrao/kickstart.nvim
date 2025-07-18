@@ -1,0 +1,109 @@
+{
+  // VSCode workspace configuration to replicate Neovim setup
+  "folders": [
+    { "path": "." }
+  ],
+  "settings": {
+    "editor.fontFamily": "FiraCode Nerd Font Mono, 'Fira Code', Menlo, Monaco, 'Courier New', monospace",
+    "editor.fontSize": 14,
+    "editor.lineHeight": 1.5,
+    "editor.tabSize": 2,
+    "editor.wordWrap": "off",
+    "editor.inlayHints.enabled": "on",
+    "editor.stickyScroll.enabled": true,
+    "editor.cursorSurroundingLines": 10,
+    "editor.formatOnSave": true,
+    "editor.bracketPairColorization.enabled": true,
+    "editor.minimap.enabled": false,
+    "editor.rulers": [80, 120],
+    "editor.renderWhitespace": "boundary",
+    "editor.scrollBeyondLastLine": false,
+    "diffEditor.ignoreTrimWhitespace": false,
+    "terminal.integrated.fontFamily": "FiraCode Nerd Font Mono, 'Fira Code', Menlo, Monaco, 'Courier New', monospace",
+    "files.trimTrailingWhitespace": true,
+    "files.insertFinalNewline": true,
+    "files.trimFinalNewlines": true,
+    "workbench.colorTheme": "Tokyo Night",
+    
+    // VSCode Vim extension settings
+    "vim.leader": " ",
+    "vim.incsearch": true,
+    "vim.useSystemClipboard": true,
+    "vim.highlightedyank.enable": true,
+    "vim.hlsearch": true,
+    "vim.insertModeKeyBindings": [],
+    "vim.normalModeKeyBindings": [
+      {
+        "before": ["<Esc>"],
+        "commands": [":nohl"]
+      }
+    ],
+    "vim.normalModeKeyBindingsNonRecursive": [
+      { "before": ["<C-h>"], "commands": ["workbench.action.navigateLeft"] },
+      { "before": ["<C-j>"], "commands": ["workbench.action.navigateDown"] },
+      { "before": ["<C-k>"], "commands": ["workbench.action.navigateUp"] },
+      { "before": ["<C-l>"], "commands": ["workbench.action.navigateRight"] },
+      { "before": ["<leader>","f"], "commands": ["editor.action.formatDocument"] },
+      { "before": ["<leader>","q"], "commands": ["workbench.action.openQuickFix"] },
+      { "before": ["<leader>","sh"], "commands": ["workbench.action.showAllSymbols"] },
+      { "before": ["<leader>","sk"], "commands": ["workbench.action.openGlobalKeybindings"] },
+      { "before": ["<leader>","sf"], "commands": ["workbench.action.quickOpen"] },
+      { "before": ["<leader>","ss"], "commands": ["workbench.action.showCommands"] },
+      { "before": ["<leader>","sw"], "commands": ["editor.action.wordHighlight.next"] },
+      { "before": ["<leader>","sg"], "commands": ["workbench.action.findInFiles"] },
+      { "before": ["<leader>","sd"], "commands": ["workbench.actions.view.problems"] },
+      { "before": ["<leader>","sr"], "commands": ["workbench.action.openRecent"] },
+      { "before": ["<leader>","s."], "commands": ["workbench.action.openRecent"] },
+      { "before": ["<leader>","<leader>"], "commands": ["workbench.action.showAllEditors"] },
+      { "before": ["<leader>","/"], "commands": ["editor.action.quickFix"] },
+      { "before": ["<leader>","s/"], "commands": ["search.action.openEditor"] },
+      { "before": ["<leader>","sn"], "commands": ["workbench.action.openSettings"] },
+      { "before": ["g","d"], "commands": ["editor.action.revealDefinition"] },
+      { "before": ["g","r"], "commands": ["editor.action.goToReferences"] },
+      { "before": ["g","I"], "commands": ["editor.action.goToImplementation"] },
+      { "before": ["<leader>","D"], "commands": ["editor.action.goToTypeDefinition"] },
+      { "before": ["<leader>","ds"], "commands": ["workbench.action.gotoSymbol"] },
+      { "before": ["<leader>","ws"], "commands": ["workbench.action.showAllSymbols"] },
+      { "before": ["<leader>","rn"], "commands": ["editor.action.rename"] },
+      { "before": ["<leader>","ca"], "commands": ["editor.action.quickFix"] },
+      { "before": ["g","D"], "commands": ["editor.action.revealDeclaration"] },
+      { "before": ["<leader>","th"], "commands": ["editor.action.toggleInlayHints"] },
+      { "before": ["<leader>","gs"], "commands": ["workbench.view.scm"] },
+      { "before": ["<leader>","ba"], "commands": ["cursor.harpoon.addFile"] },
+      { "before": ["<leader>","bl"], "commands": ["cursor.harpoon.listFiles"] },
+      { "before": ["<leader>","bp"], "commands": ["cursor.harpoon.prevFile"] },
+      { "before": ["<leader>","bn"], "commands": ["cursor.harpoon.nextFile"] },
+      { "before": ["-"], "commands": ["workbench.explorer.fileView.focus"] },
+      { "before": ["<leader>","tz"], "commands": ["workbench.action.toggleZenMode"] },
+      { "before": ["<leader>","tw"], "commands": ["editor.action.toggleWordWrap"] }
+    ],
+    "vim.visualModeKeyBindingsNonRecursive": [
+      { "before": ["<leader>","ca"], "commands": ["editor.action.quickFix"] }
+    ],
+    "vim.handleKeys": {
+      "<C-d>": true,
+      "<C-u>": true,
+      "<C-f>": false,
+      "<C-b>": false
+    }
+  },
+  // Recommended extensions to match Neovim functionality
+  "extensions": {
+    "recommendations": [
+      "vscodevim.vim",
+      "eamodio.gitlens",
+      "mhutchie.git-graph",
+      "esbenp.prettier-vscode",
+      "dbaeumer.vscode-eslint",
+      "enkia.tokyo-night",
+      "PKief.material-icon-theme",
+      "cursor.harpoon",
+      "Gruntfuggly.todo-tree",
+      "shd101wyy.markdown-preview-enhanced",
+      "usernamehw.errorlens",
+      "coenraads.bracket-pair-colorizer-2",
+      "formulahendry.auto-close-tag",
+      "jpoissonnier.vscode-styled-components"
+    ]
+  }
+}

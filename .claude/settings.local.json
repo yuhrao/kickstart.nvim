@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find:*)",
+      "Bash(git add:*)",
+      "Bash(git checkout:*)",
+      "Bash(git commit:*)",
+      "Bash(git fetch:*)",
+      "Bash(git push:*)",
+      "Bash(git rebase:*)",
+      "Bash(git stash:*)",
+      "Bash(grep:*)",
+      "Bash(ls:*)",
+      "Bash(mkdir:*)",
+      "Bash(nvim --version)",
+      "Bash(nvim:*)",
+      "Bash(rm:*)"
+    ],
+    "deny": []
+  }
+}

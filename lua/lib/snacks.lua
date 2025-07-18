@@ -75,6 +75,63 @@ modules.explorer = {
             mode = 'n',
             desc = 'Open in selected window',
           },
+          ['B'] = {
+            function(state)
+              -- Get the selected item
+              local item = state:get_item()
+              if not item then
+                return
+              end
+
+              -- Only proceed if it's a file (not a directory)
+              if item.type == 'file' then
+                -- Use window picker to select a window
+                local window_picker = require 'window-picker'
+                local picked_window_id = window_picker.pick_window {
+                  include_current_win = false,
+                } or vim.api.nvim_get_current_win()
+
+                if picked_window_id then
+                  -- Save current window to return to explorer after opening file
+                  local current_win = vim.api.nvim_get_current_win()
+                  
+                  -- Get the buffer in the selected window
+                  local target_buf = vim.api.nvim_win_get_buf(picked_window_id)
+                  
+                  -- Switch to the selected window
+                  vim.api.nvim_set_current_win(picked_window_id)
+                  
+                  -- Open the file in the selected window (replacing current buffer)
+                  vim.cmd('edit ' .. vim.fn.fnameescape(item.path))
+                  
+                  -- Return focus to explorer window
+                  vim.api.nvim_set_current_win(current_win)
+                end
+              end
+            end,
+            mode = 'n',
+            desc = 'Open in selected window (replace buffer)',
+          },
+          ['<C-b>'] = {
+            function(state)
+              -- Get the selected item
+              local item = state:get_item()
+              if not item then
+                return
+              end
+
+              -- Only proceed if it's a file (not a directory)
+              if item.type == 'file' then
+                -- Load the file into a new buffer without displaying it
+                vim.cmd('badd ' .. vim.fn.fnameescape(item.path))
+                
+                -- Notify the user that the file was added as a buffer
+                vim.notify('Added to buffers: ' .. vim.fn.fnamemodify(item.path, ':t'), vim.log.levels.INFO)
+              end
+            end,
+            mode = 'n',
+            desc = 'Add to buffers (without displaying)',
+          },
         },
       },
     },
@@ -125,6 +182,60 @@ modules.picker = {
               -- Custom mappings:
               ['S'] = { 'edit_split', mode = { 'n', 'i' }, desc = 'Open file in horizontal split' },
               ['s'] = { 'edit_vsplit', mode = { 'n', 'i' }, desc = 'Open file in vertical split' },
+              ['B'] = { 
+                function(state)
+                  -- Get the selected item
+                  local item = state:get_item()
+                  if not item then
+                    return
+                  end
+
+                  -- Only proceed if it's a file (not a directory)
+                  if item.type == "file" then
+                    -- Use window picker to select a window
+                    local window_picker = require 'window-picker'
+                    local picked_window_id = window_picker.pick_window {
+                      include_current_win = false,
+                    } or vim.api.nvim_get_current_win()
+
+                    if picked_window_id then
+                      -- Save current window to return to explorer after opening file
+                      local current_win = vim.api.nvim_get_current_win()
+                      
+                      -- Switch to the selected window
+                      vim.api.nvim_set_current_win(picked_window_id)
+                      
+                      -- Open the file in the selected window
+                      vim.cmd('edit ' .. vim.fn.fnameescape(item.path))
+                      
+                      -- Return focus to picker window
+                      vim.api.nvim_set_current_win(current_win)
+                    end
+                  end
+                end, 
+                mode = { 'n', 'i' }, 
+                desc = 'Open in selected window' 
+              },
+              ['<C-b>'] = { 
+                function(state)
+                  -- Get the selected item
+                  local item = state:get_item()
+                  if not item then
+                    return
+                  end
+
+                  -- Only proceed if it's a file (not a directory)
+                  if item.type == "file" then
+                    -- Load the file into a buffer without displaying it
+                    vim.cmd('badd ' .. vim.fn.fnameescape(item.path))
+                    
+                    -- Notify the user
+                    vim.notify('Added to buffers: ' .. vim.fn.fnamemodify(item.path, ':t'), vim.log.levels.INFO)
+                  end
+                end, 
+                mode = { 'n', 'i' }, 
+                desc = 'Add to buffers (without displaying)' 
+              },
             },
           },
         },

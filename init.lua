@@ -205,6 +205,26 @@ vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper win
 -- vim.keymap.set("n", "<C-S-j>", "<C-w>J", { desc = "Move window to the lower" })
 -- vim.keymap.set("n", "<C-S-k>", "<C-w>K", { desc = "Move window to the upper" })
 
+-- Force tabs to always be 2 spaces
+vim.opt.tabstop = 2 -- Number of spaces that a <Tab> in the file counts for
+vim.opt.shiftwidth = 2 -- Number of spaces to use for each step of (auto)indent
+vim.opt.softtabstop = 2 -- Number of spaces that a <Tab> counts for while performing editing operations
+vim.opt.expandtab = true -- Use spaces instead of tabs
+vim.opt.smartindent = true -- Smart autoindenting when starting a new line
+vim.opt.autoindent = true -- Copy indent from current line when starting a new line
+
+-- Optional: Set consistent indentation for specific filetypes
+-- This ensures the settings apply even if other plugins try to override them
+vim.api.nvim_create_autocmd('FileType', {
+  pattern = '*',
+  callback = function()
+    vim.opt_local.tabstop = 2
+    vim.opt_local.shiftwidth = 2
+    vim.opt_local.softtabstop = 2
+    vim.opt_local.expandtab = true
+  end,
+})
+
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
 
@@ -655,6 +675,33 @@ require('lazy').setup({
         },
       }
 
+      -- Disable "No information available" notification on hover
+      -- plus define border for hover window
+      vim.lsp.handlers["textDocument/hover"] = function(_, result, ctx, config)
+        config = config or {
+          border = {
+            { "╭", "Comment" },
+            { "─", "Comment" },
+            { "╮", "Comment" },
+            { "│", "Comment" },
+            { "╯", "Comment" },
+            { "─", "Comment" },
+            { "╰", "Comment" },
+            { "│", "Comment" },
+          },
+        }
+        config.focus_id = ctx.method
+        if not (result and result.contents) then
+          return
+        end
+        local markdown_lines = vim.lsp.util.convert_input_to_markdown_lines(result.contents)
+        markdown_lines = vim.lsp.util.trim_empty_lines(markdown_lines)
+        if vim.tbl_isempty(markdown_lines) then
+          return
+        end
+        return vim.lsp.util.open_floating_preview(markdown_lines, "markdown", config)
+      end
+
       -- LSP servers and clients are able to communicate to each other what features they support.
       --  By default, Neovim doesn't support everything that is in the LSP specification.
       --  When you add blink.cmp, luasnip, etc. Neovim now has *more* capabilities.
@@ -672,7 +719,7 @@ require('lazy').setup({
       --        For example, to see the options for `lua_ls`, you could go to: https://luals.github.io/wiki/settings/
       local servers = {
         -- clangd = {},
-        -- gopls = {},
+        gopls = {},
         -- pyright = {},
         -- rust_analyzer = {},
         -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
@@ -681,7 +728,7 @@ require('lazy').setup({
         --    https://github.com/pmizio/typescript-tools.nvim
         --
         -- But for many setups, the LSP (`ts_ls`) will work just fine
-        -- ts_ls = {},
+        ts_ls = {},
         --
 
         lua_ls = {
@@ -716,6 +763,16 @@ require('lazy').setup({
       local ensure_installed = vim.tbl_keys(servers or {})
       vim.list_extend(ensure_installed, {
         'stylua', -- Used to format Lua code
+        'eslint-lsp',
+        'hadolint',
+        'prettierd',
+        'shfmt',
+        'stylua',
+        'selene',
+        'shellcheck',
+        'delve',
+        'sql-formatter',
+        'ts_ls',
       })
       require('mason-tool-installer').setup { ensure_installed = ensure_installed }
 
@@ -799,12 +856,12 @@ require('lazy').setup({
           -- `friendly-snippets` contains a variety of premade snippets.
           --    See the README about individual language/framework/plugin snippets:
           --    https://github.com/rafamadriz/friendly-snippets
-          -- {
-          --   'rafamadriz/friendly-snippets',
-          --   config = function()
-          --     require('luasnip.loaders.from_vscode').lazy_load()
-          --   end,
-          -- },
+          {
+            'rafamadriz/friendly-snippets',
+            config = function()
+              require('luasnip.loaders.from_vscode').lazy_load()
+            end,
+          },
         },
         opts = {},
       },
@@ -850,7 +907,39 @@ require('lazy').setup({
       completion = {
         -- By default, you may press `<c-space>` to show the documentation.
         -- Optionally, set `auto_show = true` to show the documentation after a delay.
-        documentation = { auto_show = false, auto_show_delay_ms = 500 },
+        documentation = {
+          auto_show = false,
+          auto_show_delay_ms = 500,
+          window = {
+            border = {
+              { '󰙎', 'DiagnosticHint' },
+              { '─', 'Comment' },
+              { '╮', 'Comment' },
+              { '│', 'Comment' },
+              { '╯', 'Comment' },
+              { '─', 'Comment' },
+              { '╰', 'Comment' },
+              { '│', 'Comment' },
+            },
+            scrollbar = false,
+            winblend = 0,
+          },
+        },
+
+        menu = {
+          border = {
+            { '󱐋', 'WarningMsg' },
+            { '─', 'Comment' },
+            { '╮', 'Comment' },
+            { '│', 'Comment' },
+            { '╯', 'Comment' },
+            { '─', 'Comment' },
+            { '╰', 'Comment' },
+            { '│', 'Comment' },
+          },
+          scrollbar = false,
+          winblend = 0,
+        },
       },
 
       sources = {
@@ -872,7 +961,23 @@ require('lazy').setup({
       fuzzy = { implementation = 'lua' },
 
       -- Shows a signature help window while you type arguments for a function
-      signature = { enabled = true },
+      signature = {
+        enabled = true,
+        window = {
+          border = {
+            { '󰙎', 'DiagnosticHint' },
+            { '─', 'Comment' },
+            { '╮', 'Comment' },
+            { '│', 'Comment' },
+            { '╯', 'Comment' },
+            { '─', 'Comment' },
+            { '╰', 'Comment' },
+            { '│', 'Comment' },
+          },
+          scrollbar = false,
+          winblend = 0,
+        },
+      },
     },
   },
 
@@ -984,7 +1089,10 @@ require('lazy').setup({
   --    This is the easiest way to modularize your config.
   --
   --  Uncomment the following line and add your plugins to `lua/custom/plugins/*.lua` to get going.
-  -- { import = 'custom.plugins' },
+  --
+  --
+
+  { import = 'custom.plugins' },
   --
   -- For additional information with loading, sourcing and examples see `:help lazy.nvim-🔌-plugin-spec`
   -- Or use telescope!

@@ -116,6 +116,19 @@ vim.o.showmode = false
 --  See `:help 'clipboard'`
 vim.schedule(function()
   vim.o.clipboard = 'unnamedplus'
+  -- Explicitly set clipboard providers for macOS
+  vim.g.clipboard = {
+    name = 'macOS-clipboard',
+    copy = {
+      ['+'] = 'pbcopy',
+      ['*'] = 'pbcopy',
+    },
+    paste = {
+      ['+'] = 'pbpaste',
+      ['*'] = 'pbpaste',
+    },
+    cache_enabled = 0,
+  }
 end)
 
 -- Enable break indent
@@ -677,19 +690,20 @@ require('lazy').setup({
 
       -- Disable "No information available" notification on hover
       -- plus define border for hover window
-      vim.lsp.handlers["textDocument/hover"] = function(_, result, ctx, config)
-        config = config or {
-          border = {
-            { "╭", "Comment" },
-            { "─", "Comment" },
-            { "╮", "Comment" },
-            { "│", "Comment" },
-            { "╯", "Comment" },
-            { "─", "Comment" },
-            { "╰", "Comment" },
-            { "│", "Comment" },
-          },
-        }
+      vim.lsp.handlers['textDocument/hover'] = function(_, result, ctx, config)
+        config = config
+          or {
+            border = {
+              { '╭', 'Comment' },
+              { '─', 'Comment' },
+              { '╮', 'Comment' },
+              { '│', 'Comment' },
+              { '╯', 'Comment' },
+              { '─', 'Comment' },
+              { '╰', 'Comment' },
+              { '│', 'Comment' },
+            },
+          }
         config.focus_id = ctx.method
         if not (result and result.contents) then
           return
@@ -699,7 +713,7 @@ require('lazy').setup({
         if vim.tbl_isempty(markdown_lines) then
           return
         end
-        return vim.lsp.util.open_floating_preview(markdown_lines, "markdown", config)
+        return vim.lsp.util.open_floating_preview(markdown_lines, 'markdown', config)
       end
 
       -- LSP servers and clients are able to communicate to each other what features they support.
@@ -764,8 +778,10 @@ require('lazy').setup({
       vim.list_extend(ensure_installed, {
         'stylua', -- Used to format Lua code
         'eslint-lsp',
+        'eslint_d', -- Fast ESLint for linting
         'hadolint',
-        'prettierd',
+        'prettier', -- Code formatter
+        'prettierd', -- Fast Prettier daemon
         'shfmt',
         'stylua',
         'selene',
@@ -825,11 +841,22 @@ require('lazy').setup({
       end,
       formatters_by_ft = {
         lua = { 'stylua' },
-        -- Conform can also run multiple formatters sequentially
-        -- python = { "isort", "black" },
-        --
-        -- You can use 'stop_after_first' to run the first available formatter from the list
-        -- javascript = { "prettierd", "prettier", stop_after_first = true },
+        -- JavaScript/TypeScript formatting
+        javascript = { 'prettierd', 'prettier', stop_after_first = true },
+        typescript = { 'prettierd', 'prettier', stop_after_first = true },
+        javascriptreact = { 'prettierd', 'prettier', stop_after_first = true },
+        typescriptreact = { 'prettierd', 'prettier', stop_after_first = true },
+        -- Web technologies
+        html = { 'prettierd', 'prettier', stop_after_first = true },
+        css = { 'prettierd', 'prettier', stop_after_first = true },
+        scss = { 'prettierd', 'prettier', stop_after_first = true },
+        json = { 'prettierd', 'prettier', stop_after_first = true },
+        jsonc = { 'prettierd', 'prettier', stop_after_first = true },
+        yaml = { 'prettierd', 'prettier', stop_after_first = true },
+        markdown = { 'prettierd', 'prettier', stop_after_first = true },
+        -- Vue and Svelte
+        vue = { 'prettierd', 'prettier', stop_after_first = true },
+        svelte = { 'prettierd', 'prettier', stop_after_first = true },
       },
     },
   },
@@ -1078,7 +1105,7 @@ require('lazy').setup({
   --  Here are some example plugins that I've included in the Kickstart repository.
   --  Uncomment any of the lines below to enable them (you will need to restart nvim).
   --
-  -- require 'kickstart.plugins.debug',
+  require 'kickstart.plugins.debug',
   require 'kickstart.plugins.indent_line',
   require 'kickstart.plugins.lint',
   -- require 'kickstart.plugins.autopairs',

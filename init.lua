@@ -102,7 +102,7 @@ vim.g.have_nerd_font = true
 vim.o.number = true
 -- You can also add relative line numbers, to help with jumping.
 --  Experiment for yourself to see if you like it!
--- vim.o.relativenumber = true
+vim.o.relativenumber = true
 
 -- Enable mouse mode, can be useful for resizing splits for example!
 vim.o.mouse = 'a'
@@ -115,6 +115,9 @@ vim.o.showmode = false
 --  Remove this option if you want your OS clipboard to remain independent.
 --  See `:help 'clipboard'`
 vim.schedule(function()
+  -- Set colorscheme after all plugins are loaded
+  vim.cmd.colorscheme 'cyberdream'
+
   vim.o.clipboard = 'unnamedplus'
   -- Explicitly set clipboard providers for macOS
   vim.g.clipboard = {
@@ -130,6 +133,22 @@ vim.schedule(function()
     cache_enabled = 0,
   }
 end)
+
+vim.o.winborder = 'rounded'
+
+vim.diagnostic.config {
+  signs = {
+    text = {
+      [vim.diagnostic.severity.ERROR] = ' ',
+      [vim.diagnostic.severity.WARN] = ' ',
+      [vim.diagnostic.severity.INFO] = '󰋼 ',
+      [vim.diagnostic.severity.HINT] = ' ',
+    },
+  },
+  severity_sort = true,
+}
+
+vim.opt.termguicolors = true
 
 -- Enable break indent
 vim.o.breakindent = true
@@ -857,6 +876,7 @@ require('lazy').setup({
         -- Vue and Svelte
         vue = { 'prettierd', 'prettier', stop_after_first = true },
         svelte = { 'prettierd', 'prettier', stop_after_first = true },
+        go = { 'goimports', 'gofmt' },
       },
     },
   },
@@ -1022,11 +1042,6 @@ require('lazy').setup({
           comments = { italic = false }, -- Disable italics in comments
         },
       }
-
-      -- Load the colorscheme here.
-      -- Like many other themes, this one has different styles, and you could load
-      -- any other, such as 'tokyonight-storm', 'tokyonight-moon', or 'tokyonight-day'.
-      vim.cmd.colorscheme 'tokyonight-night'
     end,
   },
 
@@ -1076,9 +1091,33 @@ require('lazy').setup({
     main = 'nvim-treesitter.configs', -- Sets main module to use for opts
     -- [[ Configure Treesitter ]] See `:help nvim-treesitter`
     opts = {
-      ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc' },
+      ensure_installed = {
+        'bash',
+        'c',
+        'diff',
+        'html',
+        'lua',
+        'luadoc',
+        'markdown',
+        'markdown_inline',
+        'query',
+        'vim',
+        'vimdoc',
+        'typescript',
+        'javascript',
+        'json',
+      },
       -- Autoinstall languages that are not installed
       auto_install = true,
+      incremental_selection = {
+        enable = true,
+        keymaps = {
+          init_selection = 'gnn',
+          node_incremental = 'grn',
+          scope_incremental = 'grc',
+          node_decremental = 'grm',
+        },
+      },
       highlight = {
         enable = true,
         -- Some languages depend on vim's regex highlighting system (such as Ruby) for indent rules.

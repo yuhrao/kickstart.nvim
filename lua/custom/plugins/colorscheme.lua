@@ -8,11 +8,10 @@ return {
       opts.italic_comments = true
     end,
     config = function()
-      require('cyberdream').setup({
+      require('cyberdream').setup {
         transparent = true,
         italic_comments = true,
-      })
-      vim.cmd.colorscheme('cyberdream')
+      }
     end,
   },
 
@@ -28,4 +27,5 @@ return {
     end,
     opts = {},
   },
+  { 'catppuccin/nvim', name = 'catppuccin', lazy = false, priority = 1000 },
 }

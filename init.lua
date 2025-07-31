@@ -271,6 +271,68 @@ vim.api.nvim_create_autocmd('TextYankPost', {
   end,
 })
 
+-- Sequential import organization for TypeScript/JavaScript files
+local function organize_imports_sequential()
+  local bufnr = vim.api.nvim_get_current_buf()
+  local clients = vim.lsp.get_clients({ bufnr = bufnr })
+  
+  for _, client in ipairs(clients) do
+    if client.name == 'ts_ls' or client.name == 'typescript-tools' then
+      -- Step 1: Organize imports using LSP command directly
+      local params = {
+        command = '_typescript.organizeImports',
+        arguments = { vim.api.nvim_buf_get_name(bufnr) },
+      }
+      
+      client.request('workspace/executeCommand', params, function(err, result)
+        if not err then
+          -- Step 2: Remove unused imports after organize completes
+          vim.defer_fn(function()
+            local remove_params = {
+              command = '_typescript.removeUnusedImports',
+              arguments = { vim.api.nvim_buf_get_name(bufnr) },
+            }
+            
+            client.request('workspace/executeCommand', remove_params, function(remove_err, remove_result)
+              if remove_err then
+                -- Fallback: try code action approach for remove unused
+                vim.lsp.buf.code_action({
+                  context = { only = { 'source.removeUnused' } },
+                  filter = function(action)
+                    return action.kind == 'source.removeUnused' or 
+                           (action.title and action.title:lower():match('remove.*unused'))
+                  end,
+                  apply = true,
+                })
+              end
+            end, bufnr)
+          end, 200)
+        else
+          -- Fallback: try code action approach for organize
+          vim.lsp.buf.code_action({
+            context = { only = { 'source.organizeImports' } },
+            filter = function(action)
+              return action.kind == 'source.organizeImports' or 
+                     (action.title and action.title:lower():match('organize'))
+            end,
+            apply = true,
+          })
+        end
+      end, bufnr)
+      
+      break
+    end
+  end
+end
+
+-- Auto-organize imports on save for TS/JS files
+vim.api.nvim_create_autocmd('BufWritePre', {
+  desc = 'Organize and remove unused imports for TS/JS files',
+  group = vim.api.nvim_create_augroup('organize-imports', { clear = true }),
+  pattern = { '*.ts', '*.tsx', '*.js', '*.jsx' },
+  callback = organize_imports_sequential,
+})
+
 -- [[ Install `lazy.nvim` plugin manager ]]
 --    See `:help lazy.nvim.txt` or https://github.com/folke/lazy.nvim for more info
 local lazypath = vim.fn.stdpath 'data' .. '/lazy/lazy.nvim'
@@ -761,7 +823,12 @@ require('lazy').setup({
         --    https://github.com/pmizio/typescript-tools.nvim
         --
         -- But for many setups, the LSP (`ts_ls`) will work just fine
-        ts_ls = {},
+        ts_ls = {
+          root_dir = function(fname)
+            local util = require('lspconfig.util')
+            return util.root_pattern('package.json', 'tsconfig.json', '.git')(fname)
+          end,
+        },
         --
 
         lua_ls = {
@@ -877,6 +944,22 @@ require('lazy').setup({
         vue = { 'prettierd', 'prettier', stop_after_first = true },
         svelte = { 'prettierd', 'prettier', stop_after_first = true },
         go = { 'goimports', 'gofmt' },
+      },
+      formatters = {
+        prettierd = {
+          env = {
+            PRETTIERD_DEFAULT_CONFIG = vim.fn.expand('~/.prettierrc.json'),
+          },
+        },
+        prettier = {
+          args = function(self, ctx)
+            local config_file = vim.fn.findfile('.prettierrc.json', ctx.dirname .. ';')
+            if config_file and config_file ~= '' then
+              return { '--stdin-filepath', '$FILENAME', '--config', config_file }
+            end
+            return { '--stdin-filepath', '$FILENAME' }
+          end,
+        },
       },
     },
   },

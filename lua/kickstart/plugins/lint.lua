@@ -15,6 +15,18 @@ return {
         svelte = { 'eslint_d' },
       }
 
+      -- Configure eslint_d to respect project root
+      lint.linters.eslint_d.args = {
+        '--no-warn-ignored',
+        '--format',
+        'json',
+        '--stdin',
+        '--stdin-filename',
+        function()
+          return vim.api.nvim_buf_get_name(0)
+        end,
+      }
+
       -- To allow other plugins to add linters to require('lint').linters_by_ft,
       -- instead set linters_by_ft like this:
       -- lint.linters_by_ft = lint.linters_by_ft or {}

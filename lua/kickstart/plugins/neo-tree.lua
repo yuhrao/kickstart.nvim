@@ -20,6 +20,12 @@ return {
       mappings = {
         ['\\'] = 'close_window',
         ['Y'] = 'none',
+        ['y'] = {
+          'copy_to_clipboard',
+          config = {
+            show_path = 'relative'
+          }
+        },
       },
     },
     filesystem = {

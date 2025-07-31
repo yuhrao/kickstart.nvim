@@ -13,11 +13,24 @@ return {
     explorer = { enabled = true },
     indent = { enabled = true },
     input = { enabled = true },
+    lazygit = { enabled = true },
     notifier = { enabled = true },
     picker = { enabled = true },
     quickfile = { enabled = true },
     scope = { enabled = true },
-    scroll = { enabled = true },
+    scroll = {
+      enabled = false,
+      animate = {
+        duration = { step = 30, total = 250 },
+        easing = 'linear',
+      },
+      -- faster animation when repeating scroll after delay
+      animate_repeat = {
+        delay = 100, -- delay in ms before using the repeat animation
+        duration = { step = 10, total = 50 },
+        easing = 'linear',
+      },
+    },
     statuscolumn = { enabled = true },
     words = { enabled = true },
   },
@@ -44,6 +57,14 @@ return {
         Snacks.words.jump(-vim.v.count1)
       end,
       desc = 'Prev Reference',
+      mode = { 'n', 't' },
+    },
+    {
+      '<leader>lg',
+      function()
+        Snacks.lazygit.open()
+      end,
+      desc = '[L]azy [G]it',
       mode = { 'n', 't' },
     },
   },

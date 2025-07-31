@@ -114,24 +114,24 @@ vim.o.showmode = false
 --  Schedule the setting after `UiEnter` because it can increase startup-time.
 --  Remove this option if you want your OS clipboard to remain independent.
 --  See `:help 'clipboard'`
+-- Set clipboard configuration immediately
+vim.o.clipboard = 'unnamedplus'
+vim.g.clipboard = {
+  name = 'macOS-clipboard',
+  copy = {
+    ['+'] = 'pbcopy',
+    ['*'] = 'pbcopy',
+  },
+  paste = {
+    ['+'] = 'pbpaste',
+    ['*'] = 'pbpaste',
+  },
+  cache_enabled = 0,
+}
+
 vim.schedule(function()
   -- Set colorscheme after all plugins are loaded
   vim.cmd.colorscheme 'cyberdream'
-
-  vim.o.clipboard = 'unnamedplus'
-  -- Explicitly set clipboard providers for macOS
-  vim.g.clipboard = {
-    name = 'macOS-clipboard',
-    copy = {
-      ['+'] = 'pbcopy',
-      ['*'] = 'pbcopy',
-    },
-    paste = {
-      ['+'] = 'pbpaste',
-      ['*'] = 'pbpaste',
-    },
-    cache_enabled = 0,
-  }
 end)
 
 vim.o.winborder = 'rounded'

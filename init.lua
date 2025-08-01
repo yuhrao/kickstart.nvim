@@ -274,8 +274,8 @@ vim.api.nvim_create_autocmd('TextYankPost', {
 -- Sequential import organization for TypeScript/JavaScript files
 local function organize_imports_sequential()
   local bufnr = vim.api.nvim_get_current_buf()
-  local clients = vim.lsp.get_clients({ bufnr = bufnr })
-  
+  local clients = vim.lsp.get_clients { bufnr = bufnr }
+
   for _, client in ipairs(clients) do
     if client.name == 'ts_ls' or client.name == 'typescript-tools' then
       -- Step 1: Organize imports using LSP command directly
@@ -283,7 +283,7 @@ local function organize_imports_sequential()
         command = '_typescript.organizeImports',
         arguments = { vim.api.nvim_buf_get_name(bufnr) },
       }
-      
+
       client.request('workspace/executeCommand', params, function(err, result)
         if not err then
           -- Step 2: Remove unused imports after organize completes
@@ -292,34 +292,32 @@ local function organize_imports_sequential()
               command = '_typescript.removeUnusedImports',
               arguments = { vim.api.nvim_buf_get_name(bufnr) },
             }
-            
+
             client.request('workspace/executeCommand', remove_params, function(remove_err, remove_result)
               if remove_err then
                 -- Fallback: try code action approach for remove unused
-                vim.lsp.buf.code_action({
+                vim.lsp.buf.code_action {
                   context = { only = { 'source.removeUnused' } },
                   filter = function(action)
-                    return action.kind == 'source.removeUnused' or 
-                           (action.title and action.title:lower():match('remove.*unused'))
+                    return action.kind == 'source.removeUnused' or (action.title and action.title:lower():match 'remove.*unused')
                   end,
                   apply = true,
-                })
+                }
               end
             end, bufnr)
           end, 200)
         else
           -- Fallback: try code action approach for organize
-          vim.lsp.buf.code_action({
+          vim.lsp.buf.code_action {
             context = { only = { 'source.organizeImports' } },
             filter = function(action)
-              return action.kind == 'source.organizeImports' or 
-                     (action.title and action.title:lower():match('organize'))
+              return action.kind == 'source.organizeImports' or (action.title and action.title:lower():match 'organize')
             end,
             apply = true,
-          })
+          }
         end
       end, bufnr)
-      
+
       break
     end
   end
@@ -459,8 +457,11 @@ require('lazy').setup({
       -- Document existing key chains
       spec = {
         { '<leader>s', group = '[S]earch' },
-        { '<leader>t', group = '[T]oggle' },
+        { '<leader>t', group = '[T]est' },
+        { '<leader>T', group = '[T]oggle' },
         { '<leader>h', group = 'Git [H]unk', mode = { 'n', 'v' } },
+        { '<leader>F', group = '[F]lutter' },
+        { '<leader>d', group = '[D]ebug' },
       },
     },
   },
@@ -733,7 +734,7 @@ require('lazy').setup({
           --
           -- This may be unwanted, since they displace some of your code
           if client and client_supports_method(client, vim.lsp.protocol.Methods.textDocument_inlayHint, event.buf) then
-            map('<leader>th', function()
+            map('<leader>Th', function()
               vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled { bufnr = event.buf })
             end, '[T]oggle Inlay [H]ints')
           end
@@ -825,7 +826,7 @@ require('lazy').setup({
         -- But for many setups, the LSP (`ts_ls`) will work just fine
         ts_ls = {
           root_dir = function(fname)
-            local util = require('lspconfig.util')
+            local util = require 'lspconfig.util'
             return util.root_pattern('package.json', 'tsconfig.json', '.git')(fname)
           end,
         },
@@ -892,6 +893,27 @@ require('lazy').setup({
           end,
         },
       }
+      
+      -- Setup dartls separately since it's not available through Mason
+      -- Ensure asdf shims are in PATH
+      local asdf_shims = vim.fn.expand('~/.asdf/shims')
+      if vim.fn.isdirectory(asdf_shims) == 1 and not string.find(vim.env.PATH, asdf_shims, 1, true) then
+        vim.env.PATH = asdf_shims .. ':' .. vim.env.PATH
+      end
+      
+      -- Use the full path to dart executable
+      local dart_cmd = vim.fn.expand('~/.asdf/shims/dart')
+      if vim.fn.executable(dart_cmd) ~= 1 then
+        dart_cmd = 'dart' -- fallback to PATH
+      end
+      
+      require('lspconfig').dartls.setup {
+        capabilities = capabilities,
+        cmd = { dart_cmd, 'language-server', '--protocol=lsp' },
+        filetypes = { 'dart' },
+        root_dir = require('lspconfig.util').root_pattern('pubspec.yaml', '.git'),
+        settings = {},
+      }
     end,
   },
 
@@ -948,7 +970,7 @@ require('lazy').setup({
       formatters = {
         prettierd = {
           env = {
-            PRETTIERD_DEFAULT_CONFIG = vim.fn.expand('~/.prettierrc.json'),
+            PRETTIERD_DEFAULT_CONFIG = vim.fn.expand '~/.prettierrc.json',
           },
         },
         prettier = {

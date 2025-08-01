@@ -271,64 +271,45 @@ vim.api.nvim_create_autocmd('TextYankPost', {
   end,
 })
 
--- Sequential import organization for TypeScript/JavaScript files
-local function organize_imports_sequential()
-  local bufnr = vim.api.nvim_get_current_buf()
-  local clients = vim.lsp.get_clients { bufnr = bufnr }
-
-  for _, client in ipairs(clients) do
-    if client.name == 'ts_ls' or client.name == 'typescript-tools' then
-      -- Step 1: Organize imports using LSP command directly
-      local params = {
-        command = '_typescript.organizeImports',
-        arguments = { vim.api.nvim_buf_get_name(bufnr) },
-      }
-
-      client.request('workspace/executeCommand', params, function(err, result)
-        if not err then
-          -- Step 2: Remove unused imports after organize completes
-          vim.defer_fn(function()
-            local remove_params = {
-              command = '_typescript.removeUnusedImports',
-              arguments = { vim.api.nvim_buf_get_name(bufnr) },
-            }
-
-            client.request('workspace/executeCommand', remove_params, function(remove_err, remove_result)
-              if remove_err then
-                -- Fallback: try code action approach for remove unused
-                vim.lsp.buf.code_action {
-                  context = { only = { 'source.removeUnused' } },
-                  filter = function(action)
-                    return action.kind == 'source.removeUnused' or (action.title and action.title:lower():match 'remove.*unused')
-                  end,
-                  apply = true,
-                }
-              end
-            end, bufnr)
-          end, 200)
-        else
-          -- Fallback: try code action approach for organize
-          vim.lsp.buf.code_action {
-            context = { only = { 'source.organizeImports' } },
-            filter = function(action)
-              return action.kind == 'source.organizeImports' or (action.title and action.title:lower():match 'organize')
-            end,
-            apply = true,
-          }
-        end
-      end, bufnr)
-
-      break
-    end
-  end
-end
-
--- Auto-organize imports on save for TS/JS files
+-- Auto-organize imports on save for TS/JS files using typescript-tools.nvim
 vim.api.nvim_create_autocmd('BufWritePre', {
   desc = 'Organize and remove unused imports for TS/JS files',
   group = vim.api.nvim_create_augroup('organize-imports', { clear = true }),
   pattern = { '*.ts', '*.tsx', '*.js', '*.jsx' },
-  callback = organize_imports_sequential,
+  callback = function()
+    local bufnr = vim.api.nvim_get_current_buf()
+    local clients = vim.lsp.get_clients { bufnr = bufnr }
+    
+    -- Check if typescript-tools client is attached
+    local has_typescript_tools = false
+    for _, client in ipairs(clients) do
+      if client.name == 'typescript-tools' then
+        has_typescript_tools = true
+        break
+      end
+    end
+    
+    if has_typescript_tools then
+      -- Use typescript-tools.nvim custom commands
+      pcall(vim.cmd, 'TSToolsOrganizeImports')
+      -- Small delay to ensure organize completes before save
+      vim.defer_fn(function()
+        -- TSToolsOrganizeImports already includes removing unused imports
+      end, 50)
+    else
+      -- Fallback to LSP code actions if typescript-tools isn't available
+      vim.lsp.buf.code_action {
+        context = { only = { 'source.organizeImports' } },
+        apply = true,
+      }
+      vim.defer_fn(function()
+        vim.lsp.buf.code_action {
+          context = { only = { 'source.removeUnused' } },
+          apply = true,
+        }
+      end, 100)
+    end
+  end,
 })
 
 -- [[ Install `lazy.nvim` plugin manager ]]
@@ -590,6 +571,53 @@ require('lazy').setup({
       },
     },
   },
+  { -- TypeScript tools
+    'pmizio/typescript-tools.nvim',
+    dependencies = { 'nvim-lua/plenary.nvim', 'neovim/nvim-lspconfig' },
+    ft = { 'typescript', 'typescriptreact', 'javascript', 'javascriptreact' },
+    config = function()
+      local capabilities = require('blink.cmp').get_lsp_capabilities()
+      require('typescript-tools').setup {
+        capabilities = capabilities,
+        settings = {
+          separate_diagnostic_server = true,
+          publish_diagnostic_on = 'insert_leave',
+          expose_as_code_action = {
+            'source.organizeImports',
+            'source.removeUnused',
+            'source.addMissingImports',
+            'source.fixAll',
+          },
+          tsserver_path = nil,
+          tsserver_plugins = {},
+          tsserver_max_memory = 'auto',
+          tsserver_format_options = {
+            allowIncompleteCompletions = false,
+            allowRenameOfImportPath = false,
+          },
+          tsserver_file_preferences = {
+            includeInlayParameterNameHints = 'literal',
+            includeInlayParameterNameHintsWhenArgumentMatchesName = false,
+            includeInlayFunctionParameterTypeHints = false,
+            includeInlayVariableTypeHints = false,
+            includeInlayPropertyDeclarationTypeHints = false,
+            includeInlayFunctionLikeReturnTypeHints = false,
+            includeInlayEnumMemberValueHints = false,
+          },
+          tsserver_locale = 'en',
+          complete_function_calls = false,
+          include_completions_with_insert_text = true,
+          code_lens = 'off',
+          disable_member_code_lens = true,
+          jsx_close_tag = {
+            enable = false,
+            filetypes = { 'javascriptreact', 'typescriptreact' },
+          },
+        },
+      }
+    end,
+  },
+
   {
     -- Main LSP Configuration
     'neovim/nvim-lspconfig',
@@ -820,16 +848,8 @@ require('lazy').setup({
         -- rust_analyzer = {},
         -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
         --
-        -- Some languages (like typescript) have entire language plugins that can be useful:
-        --    https://github.com/pmizio/typescript-tools.nvim
-        --
-        -- But for many setups, the LSP (`ts_ls`) will work just fine
-        ts_ls = {
-          root_dir = function(fname)
-            local util = require 'lspconfig.util'
-            return util.root_pattern('package.json', 'tsconfig.json', '.git')(fname)
-          end,
-        },
+        -- Using typescript-tools.nvim instead of ts_ls
+        -- https://github.com/pmizio/typescript-tools.nvim
         --
 
         lua_ls = {
@@ -875,7 +895,6 @@ require('lazy').setup({
         'shellcheck',
         'delve',
         'sql-formatter',
-        'ts_ls',
       })
       require('mason-tool-installer').setup { ensure_installed = ensure_installed }
 
@@ -940,6 +959,17 @@ require('lazy').setup({
         local disable_filetypes = { c = true, cpp = true }
         if disable_filetypes[vim.bo[bufnr].filetype] then
           return nil
+        end
+        
+        -- For TS/JS files, organize imports first, then format
+        local filetype = vim.bo[bufnr].filetype
+        if filetype == 'typescript' or filetype == 'typescriptreact' or filetype == 'javascript' or filetype == 'javascriptreact' then
+          -- Import organization happens via the BufWritePre autocmd above
+          -- Add a small delay to ensure import organization completes before formatting
+          return {
+            timeout_ms = 1000,
+            lsp_format = 'fallback',
+          }
         else
           return {
             timeout_ms = 500,

@@ -271,13 +271,13 @@ vim.api.nvim_create_autocmd('TextYankPost', {
   end,
 })
 
--- Auto-organize imports on save for TS/JS files using typescript-tools.nvim
+-- Sequential import organization and formatting for TS/JS files
 vim.api.nvim_create_autocmd('BufWritePre', {
-  desc = 'Organize and remove unused imports for TS/JS files',
-  group = vim.api.nvim_create_augroup('organize-imports', { clear = true }),
+  desc = 'Organize imports then format for TS/JS files',
+  group = vim.api.nvim_create_augroup('ts-format-sequence', { clear = true }),
   pattern = { '*.ts', '*.tsx', '*.js', '*.jsx' },
-  callback = function()
-    local bufnr = vim.api.nvim_get_current_buf()
+  callback = function(event)
+    local bufnr = event.buf
     local clients = vim.lsp.get_clients { bufnr = bufnr }
     
     -- Check if typescript-tools client is attached
@@ -289,13 +289,29 @@ vim.api.nvim_create_autocmd('BufWritePre', {
       end
     end
     
+    -- Function to format after import organization
+    local function format_buffer()
+      local conform = require('conform')
+      conform.format({
+        bufnr = bufnr,
+        async = false,
+        timeout_ms = 1000,
+        lsp_format = 'fallback',
+      })
+    end
+    
     if has_typescript_tools then
       -- Use typescript-tools.nvim custom commands
-      pcall(vim.cmd, 'TSToolsOrganizeImports')
-      -- Small delay to ensure organize completes before save
-      vim.defer_fn(function()
-        -- TSToolsOrganizeImports already includes removing unused imports
-      end, 50)
+      local success = pcall(vim.cmd, 'TSToolsOrganizeImports')
+      if success then
+        -- Wait for import organization to complete, then format
+        vim.defer_fn(function()
+          format_buffer()
+        end, 200)
+      else
+        -- If organize imports failed, still format
+        format_buffer()
+      end
     else
       -- Fallback to LSP code actions if typescript-tools isn't available
       vim.lsp.buf.code_action {
@@ -307,7 +323,11 @@ vim.api.nvim_create_autocmd('BufWritePre', {
           context = { only = { 'source.removeUnused' } },
           apply = true,
         }
-      end, 100)
+        -- Format after both actions
+        vim.defer_fn(function()
+          format_buffer()
+        end, 100)
+      end, 200)
     end
   end,
 })
@@ -961,15 +981,11 @@ require('lazy').setup({
           return nil
         end
         
-        -- For TS/JS files, organize imports first, then format
+        -- For TS/JS files, disable automatic formatting here since we handle it manually
+        -- in the BufWritePre autocmd to avoid race conditions
         local filetype = vim.bo[bufnr].filetype
         if filetype == 'typescript' or filetype == 'typescriptreact' or filetype == 'javascript' or filetype == 'javascriptreact' then
-          -- Import organization happens via the BufWritePre autocmd above
-          -- Add a small delay to ensure import organization completes before formatting
-          return {
-            timeout_ms = 1000,
-            lsp_format = 'fallback',
-          }
+          return nil -- Disable automatic formatting for TS/JS files
         else
           return {
             timeout_ms = 500,

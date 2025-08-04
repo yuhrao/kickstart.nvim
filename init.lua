@@ -623,6 +623,29 @@ require('lazy').setup({
             includeInlayPropertyDeclarationTypeHints = false,
             includeInlayFunctionLikeReturnTypeHints = false,
             includeInlayEnumMemberValueHints = false,
+            -- Enable Node.js types and better module resolution
+            includePackageJsonAutoImports = 'auto',
+            includeCompletionsForModuleExports = true,
+            includeCompletionsWithInsertText = true,
+          },
+          -- Configure TypeScript server initialization with Node.js support
+          tsserver_init_options = {
+            preferences = {
+              includePackageJsonAutoImports = 'auto',
+              includeCompletionsForModuleExports = true,
+              includeCompletionsWithInsertText = true,
+            },
+            -- Ensure TypeScript server recognizes Node.js types
+            hostInfo = 'neovim',
+            compilerOptions = {
+              moduleResolution = 'node',
+              allowSyntheticDefaultImports = true,
+              esModuleInterop = true,
+              skipLibCheck = true,
+              -- Include both DOM and Node.js types
+              lib = { 'dom', 'dom.iterable', 'esnext', 'node' },
+              types = { 'node' },
+            },
           },
           tsserver_locale = 'en',
           complete_function_calls = false,

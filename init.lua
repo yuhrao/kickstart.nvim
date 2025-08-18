@@ -279,7 +279,7 @@ vim.api.nvim_create_autocmd('BufWritePre', {
   callback = function(event)
     local bufnr = event.buf
     local clients = vim.lsp.get_clients { bufnr = bufnr }
-    
+
     -- Check if typescript-tools client is attached
     local has_typescript_tools = false
     for _, client in ipairs(clients) do
@@ -288,26 +288,26 @@ vim.api.nvim_create_autocmd('BufWritePre', {
         break
       end
     end
-    
+
     -- Function to format after import organization
     local function format_buffer()
-      local conform = require('conform')
-      conform.format({
+      local conform = require 'conform'
+      conform.format {
         bufnr = bufnr,
         async = false,
         timeout_ms = 1000,
         lsp_format = 'fallback',
-      })
+      }
     end
-    
+
     if has_typescript_tools then
       -- Use typescript-tools.nvim custom commands
       local success = pcall(vim.cmd, 'TSToolsOrganizeImports')
       if success then
-        -- Wait for import organization to complete, then format
+        -- Reduced delay for better performance
         vim.defer_fn(function()
           format_buffer()
-        end, 200)
+        end, 50)
       else
         -- If organize imports failed, still format
         format_buffer()
@@ -318,16 +318,14 @@ vim.api.nvim_create_autocmd('BufWritePre', {
         context = { only = { 'source.organizeImports' } },
         apply = true,
       }
+      -- Single defer for both actions
       vim.defer_fn(function()
         vim.lsp.buf.code_action {
           context = { only = { 'source.removeUnused' } },
           apply = true,
         }
-        -- Format after both actions
-        vim.defer_fn(function()
-          format_buffer()
-        end, 100)
-      end, 200)
+        format_buffer()
+      end, 100)
     end
   end,
 })
@@ -909,6 +907,38 @@ require('lazy').setup({
             },
           },
         },
+
+        tailwindcss = {
+          filetypes = { 'html', 'css', 'scss', 'javascript', 'javascriptreact', 'typescript', 'typescriptreact', 'vue', 'svelte' },
+          settings = {
+            tailwindCSS = {
+              classAttributes = { 'class', 'className', 'class:list', 'classList', 'ngClass' },
+              lint = {
+                cssConflict = 'warning',
+                invalidApply = 'error',
+                invalidConfigPath = 'error',
+                invalidScreen = 'error',
+                invalidTailwindDirective = 'error',
+                invalidVariant = 'error',
+                recommendedVariantOrder = 'warning',
+              },
+              validate = true,
+              experimental = {
+                classRegex = {
+                  -- For JavaScript/TypeScript template literals
+                  { 'cva\\(([^)]*)\\)', '["\'`]([^"\'`]*).*?["\'`]' },
+                  { 'cx\\(([^)]*)\\)', '["\'`]([^"\'`]*).*?["\'`]' },
+                  { 'clsx\\(([^)]*)\\)', '["\'`]([^"\'`]*).*?["\'`]' },
+                  { 'cn\\(([^)]*)\\)', '["\'`]([^"\'`]*).*?["\'`]' },
+                  -- For class variance authority (cva)
+                  { 'tv\\(([^)]*)\\)', '["\'`]([^"\'`]*).*?["\'`]' },
+                  -- For template strings
+                  { '`([^`]*)`', '["\'`]([^"\'`]*).*?["\'`]' },
+                },
+              },
+            },
+          },
+        },
       }
 
       -- Ensure the servers and tools above are installed
@@ -929,7 +959,7 @@ require('lazy').setup({
         'stylua', -- Used to format Lua code
         'eslint-lsp',
         'eslint_d', -- Fast ESLint for linting
-        'hadolint',
+        -- 'hadolint',
         'prettier', -- Code formatter
         'prettierd', -- Fast Prettier daemon
         'shfmt',
@@ -938,6 +968,7 @@ require('lazy').setup({
         'shellcheck',
         'delve',
         'sql-formatter',
+        'tailwindcss-language-server', -- Tailwind CSS LSP
       })
       require('mason-tool-installer').setup { ensure_installed = ensure_installed }
 
@@ -955,20 +986,20 @@ require('lazy').setup({
           end,
         },
       }
-      
+
       -- Setup dartls separately since it's not available through Mason
       -- Ensure asdf shims are in PATH
-      local asdf_shims = vim.fn.expand('~/.asdf/shims')
+      local asdf_shims = vim.fn.expand '~/.asdf/shims'
       if vim.fn.isdirectory(asdf_shims) == 1 and not string.find(vim.env.PATH, asdf_shims, 1, true) then
         vim.env.PATH = asdf_shims .. ':' .. vim.env.PATH
       end
-      
+
       -- Use the full path to dart executable
-      local dart_cmd = vim.fn.expand('~/.asdf/shims/dart')
+      local dart_cmd = vim.fn.expand '~/.asdf/shims/dart'
       if vim.fn.executable(dart_cmd) ~= 1 then
         dart_cmd = 'dart' -- fallback to PATH
       end
-      
+
       require('lspconfig').dartls.setup {
         capabilities = capabilities,
         cmd = { dart_cmd, 'language-server', '--protocol=lsp' },
@@ -1003,7 +1034,7 @@ require('lazy').setup({
         if disable_filetypes[vim.bo[bufnr].filetype] then
           return nil
         end
-        
+
         -- For TS/JS files, disable automatic formatting here since we handle it manually
         -- in the BufWritePre autocmd to avoid race conditions
         local filetype = vim.bo[bufnr].filetype

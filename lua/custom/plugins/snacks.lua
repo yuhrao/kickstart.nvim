@@ -2,7 +2,6 @@ return {
   'folke/snacks.nvim',
   priority = 1000,
   lazy = false,
-  ---@type snacks.Config
   opts = {
     -- your configuration comes here
     -- or leave it empty to use the default settings
@@ -10,12 +9,12 @@ return {
     bigfile = { enabled = true },
     bufdelete = { enabled = true },
     dashboard = { enabled = true },
-    explorer = { enabled = true },
+    explorer = { enabled = false },   -- Keep disabled, using Neo-tree
     indent = { enabled = true },
     input = { enabled = true },
     lazygit = { enabled = true },
     notifier = { enabled = true },
-    picker = { enabled = true },
+    picker = { enabled = false },     -- Keep disabled, using Telescope
     quickfile = { enabled = true },
     scope = { enabled = true },
     scroll = {
@@ -39,14 +38,14 @@ return {
       '<leader>bd',
       mode = { 'n', 'x', 'o' },
       function()
-        Snacks.bufdelete.delete()
+        require('snacks').bufdelete.delete()
       end,
       desc = '[B]uffer [D]elete Current',
     },
     {
       ']]',
       function()
-        Snacks.words.jump(vim.v.count1)
+        require('snacks').words.jump(vim.v.count1)
       end,
       desc = 'Next Reference',
       mode = { 'n', 't' },
@@ -54,7 +53,7 @@ return {
     {
       '[[',
       function()
-        Snacks.words.jump(-vim.v.count1)
+        require('snacks').words.jump(-vim.v.count1)
       end,
       desc = 'Prev Reference',
       mode = { 'n', 't' },
@@ -62,7 +61,7 @@ return {
     {
       '<leader>lg',
       function()
-        Snacks.lazygit.open()
+        require('snacks').lazygit.open()
       end,
       desc = '[L]azy [G]it',
       mode = { 'n', 't' },

@@ -19,6 +19,7 @@ return {
   {
     'mawkler/modicator.nvim',
     dependencies = 'scottmckendry/cyberdream.nvim',
+    event = 'VeryLazy',
     init = function()
       -- These are required for Modicator to work
       vim.o.cursorline = false
@@ -27,5 +28,5 @@ return {
     end,
     opts = {},
   },
-  { 'catppuccin/nvim', name = 'catppuccin', lazy = false, priority = 1000 },
+  { 'catppuccin/nvim', name = 'catppuccin', lazy = true },
 }

@@ -2,6 +2,8 @@ return {
   { 'nvim-neotest/neotest-plenary' },
   {
     'nvim-neotest/neotest',
+    ft = { 'javascript', 'typescript', 'javascriptreact', 'typescriptreact', 'go', 'php', 'lua' },
+    cmd = { 'Neotest' },
     dependencies = {
       'nvim-neotest/nvim-nio',
       'nvim-neotest/neotest-jest',

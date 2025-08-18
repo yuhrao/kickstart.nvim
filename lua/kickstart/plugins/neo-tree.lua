@@ -10,7 +10,7 @@ return {
     'MunifTanjim/nui.nvim',
     's1n7ax/nvim-window-picker',
   },
-  lazy = false,
+  cmd = 'Neotree',
   keys = {
     { '\\', ':Neotree reveal<CR>', desc = 'NeoTree reveal', silent = true },
   },

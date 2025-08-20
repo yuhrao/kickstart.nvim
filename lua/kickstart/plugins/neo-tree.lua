@@ -19,12 +19,45 @@ return {
       position = 'right',
       mappings = {
         ['\\'] = 'close_window',
-        ['Y'] = 'none',
+        ['Y'] = function(state)
+          -- NeoTree is based on [NuiTree](https://github.com/MunifTanjim/nui.nvim/tree/main/lua/nui/tree)
+          -- The node is based on [NuiNode](https://github.com/MunifTanjim/nui.nvim/tree/main/lua/nui/tree#nuitreenode)
+          local node = state.tree:get_node()
+          local filepath = node:get_id()
+          local filename = node.name
+          local modify = vim.fn.fnamemodify
+
+          local results = {
+            modify(filepath, ':.'),
+            modify(filepath, ':~'),
+            filepath,
+            filename,
+            modify(filename, ':r'),
+            modify(filename, ':e'),
+          }
+
+          vim.ui.select({
+            '1. Path relative to CWD: ' .. results[1],
+            '2. Path relative to HOME: ' .. results[2],
+            '3. Absolute path: ' .. results[3],
+            '4. Filename: ' .. results[4],
+            '5. Filename without extension: ' .. results[5],
+            '6. Extension of the filename: ' .. results[6],
+          }, { prompt = 'Choose to copy to clipboard:' }, function(choice)
+            if not choice then
+              return
+            end
+            local i = tonumber(choice:sub(1, 1))
+            local result = results[i]
+            vim.fn.setreg('+', result)
+            vim.notify('Copied: ' .. result)
+          end)
+        end,
         ['y'] = {
           'copy_to_clipboard',
           config = {
-            show_path = 'relative'
-          }
+            show_path = 'relative',
+          },
         },
       },
     },

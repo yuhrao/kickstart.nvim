@@ -271,61 +271,108 @@ vim.api.nvim_create_autocmd('TextYankPost', {
   end,
 })
 
--- Sequential import organization and formatting for TS/JS files
+-- Lock to prevent multiple simultaneous formatting operations
+local formatting_lock = {}
+
+-- Sequential import organization and formatting for multiple file types
 vim.api.nvim_create_autocmd('BufWritePre', {
-  desc = 'Organize imports then format for TS/JS files',
-  group = vim.api.nvim_create_augroup('ts-format-sequence', { clear = true }),
-  pattern = { '*.ts', '*.tsx', '*.js', '*.jsx' },
+  desc = 'Sequential formatting: format, then organize imports, then remove unused',
+  group = vim.api.nvim_create_augroup('sequential-format', { clear = true }),
+  pattern = { '*.ts', '*.tsx', '*.js', '*.jsx', '*.go' },
   callback = function(event)
     local bufnr = event.buf
-    local clients = vim.lsp.get_clients { bufnr = bufnr }
-
-    -- Check if typescript-tools client is attached
-    local has_typescript_tools = false
-    for _, client in ipairs(clients) do
-      if client.name == 'typescript-tools' then
-        has_typescript_tools = true
-        break
-      end
+    local filetype = vim.bo[bufnr].filetype
+    
+    -- Check if already formatting this buffer
+    if formatting_lock[bufnr] then
+      return
+    end
+    
+    -- Set lock
+    formatting_lock[bufnr] = true
+    
+    -- Clear lock after operation completes
+    local function clear_lock()
+      vim.schedule(function()
+        formatting_lock[bufnr] = false
+      end)
     end
 
-    -- Function to format after import organization
-    local function format_buffer()
+    -- TypeScript/JavaScript files
+    if filetype == 'typescript' or filetype == 'typescriptreact' or filetype == 'javascript' or filetype == 'javascriptreact' then
+      local clients = vim.lsp.get_clients { bufnr = bufnr }
+      
+      -- Check if typescript-tools client is attached
+      local has_typescript_tools = false
+      for _, client in ipairs(clients) do
+        if client.name == 'typescript-tools' then
+          has_typescript_tools = true
+          break
+        end
+      end
+
+      -- Step 1: Format first
       local conform = require 'conform'
-      conform.format {
+      conform.format({
         bufnr = bufnr,
         async = false,
-        timeout_ms = 1000,
-        lsp_format = 'fallback',
-      }
-    end
+        timeout_ms = 2000,
+        lsp_format = 'never', -- Don't use LSP formatting, only prettier
+      }, function(err)
+        if err then
+          vim.notify('Format failed: ' .. err, vim.log.levels.WARN)
+          clear_lock()
+          return
+        end
+        
+        -- Step 2: Organize imports after formatting
+        vim.schedule(function()
+          if has_typescript_tools then
+            local organize_success = pcall(vim.cmd, 'TSToolsOrganizeImports sync')
+            if not organize_success then
+              clear_lock()
+              return
+            end
+            
+            -- Step 3: Remove unused imports after organizing
+            vim.schedule(function()
+              pcall(vim.cmd, 'TSToolsRemoveUnused sync')
+              clear_lock()
+            end)
+          else
+            -- Fallback to LSP code actions
+            vim.lsp.buf.code_action({
+              context = { only = { 'source.organizeImports' } },
+              apply = true,
+            })
+            
+            -- Wait a bit for organize imports to complete
+            vim.wait(200, function() return false end)
+            
+            vim.lsp.buf.code_action({
+              context = { only = { 'source.removeUnused' } },
+              apply = true,
+            })
+            
+            clear_lock()
+          end
+        end)
+      end)
 
-    if has_typescript_tools then
-      -- Use typescript-tools.nvim custom commands
-      local success = pcall(vim.cmd, 'TSToolsOrganizeImports')
-      if success then
-        -- Reduced delay for better performance
-        vim.defer_fn(function()
-          format_buffer()
-        end, 50)
-      else
-        -- If organize imports failed, still format
-        format_buffer()
-      end
+    -- Go files
+    elseif filetype == 'go' then
+      -- For Go files, goimports handles both import organization and formatting
+      local conform = require 'conform'
+      conform.format({
+        bufnr = bufnr,
+        async = false,
+        timeout_ms = 2000,
+        lsp_format = 'fallback',
+      }, function()
+        clear_lock()
+      end)
     else
-      -- Fallback to LSP code actions if typescript-tools isn't available
-      vim.lsp.buf.code_action {
-        context = { only = { 'source.organizeImports' } },
-        apply = true,
-      }
-      -- Single defer for both actions
-      vim.defer_fn(function()
-        vim.lsp.buf.code_action {
-          context = { only = { 'source.removeUnused' } },
-          apply = true,
-        }
-        format_buffer()
-      end, 100)
+      clear_lock()
     end
   end,
 })
@@ -1035,11 +1082,13 @@ require('lazy').setup({
           return nil
         end
 
-        -- For TS/JS files, disable automatic formatting here since we handle it manually
-        -- in the BufWritePre autocmd to avoid race conditions
+        -- Disable automatic formatting for files that are handled by our sequential autocmd
+        -- to avoid race conditions
         local filetype = vim.bo[bufnr].filetype
-        if filetype == 'typescript' or filetype == 'typescriptreact' or filetype == 'javascript' or filetype == 'javascriptreact' then
-          return nil -- Disable automatic formatting for TS/JS files
+        if filetype == 'typescript' or filetype == 'typescriptreact' 
+           or filetype == 'javascript' or filetype == 'javascriptreact' 
+           or filetype == 'go' then
+          return nil -- Disable automatic formatting for files with sequential processing
         else
           return {
             timeout_ms = 500,
@@ -1065,7 +1114,7 @@ require('lazy').setup({
         -- Vue and Svelte
         vue = { 'prettierd', 'prettier', stop_after_first = true },
         svelte = { 'prettierd', 'prettier', stop_after_first = true },
-        go = { 'goimports', 'gofmt' },
+        go = { 'goimports' }, -- goimports handles both import organization and formatting
       },
       formatters = {
         prettierd = {

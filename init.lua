@@ -282,15 +282,15 @@ vim.api.nvim_create_autocmd('BufWritePre', {
   callback = function(event)
     local bufnr = event.buf
     local filetype = vim.bo[bufnr].filetype
-    
+
     -- Check if already formatting this buffer
     if formatting_lock[bufnr] then
       return
     end
-    
+
     -- Set lock
     formatting_lock[bufnr] = true
-    
+
     -- Clear lock after operation completes
     local function clear_lock()
       vim.schedule(function()
@@ -301,7 +301,7 @@ vim.api.nvim_create_autocmd('BufWritePre', {
     -- TypeScript/JavaScript files
     if filetype == 'typescript' or filetype == 'typescriptreact' or filetype == 'javascript' or filetype == 'javascriptreact' then
       local clients = vim.lsp.get_clients { bufnr = bufnr }
-      
+
       -- Check if typescript-tools client is attached
       local has_typescript_tools = false
       for _, client in ipairs(clients) do
@@ -324,7 +324,7 @@ vim.api.nvim_create_autocmd('BufWritePre', {
           clear_lock()
           return
         end
-        
+
         -- Step 2: Organize imports after formatting
         vim.schedule(function()
           if has_typescript_tools then
@@ -333,7 +333,7 @@ vim.api.nvim_create_autocmd('BufWritePre', {
               clear_lock()
               return
             end
-            
+
             -- Step 3: Remove unused imports after organizing
             vim.schedule(function()
               pcall(vim.cmd, 'TSToolsRemoveUnused sync')
@@ -341,19 +341,21 @@ vim.api.nvim_create_autocmd('BufWritePre', {
             end)
           else
             -- Fallback to LSP code actions
-            vim.lsp.buf.code_action({
+            vim.lsp.buf.code_action {
               context = { only = { 'source.organizeImports' } },
               apply = true,
-            })
-            
+            }
+
             -- Wait a bit for organize imports to complete
-            vim.wait(200, function() return false end)
-            
-            vim.lsp.buf.code_action({
+            vim.wait(200, function()
+              return false
+            end)
+
+            vim.lsp.buf.code_action {
               context = { only = { 'source.removeUnused' } },
               apply = true,
-            })
-            
+            }
+
             clear_lock()
           end
         end)
@@ -1033,27 +1035,6 @@ require('lazy').setup({
           end,
         },
       }
-
-      -- Setup dartls separately since it's not available through Mason
-      -- Ensure asdf shims are in PATH
-      local asdf_shims = vim.fn.expand '~/.asdf/shims'
-      if vim.fn.isdirectory(asdf_shims) == 1 and not string.find(vim.env.PATH, asdf_shims, 1, true) then
-        vim.env.PATH = asdf_shims .. ':' .. vim.env.PATH
-      end
-
-      -- Use the full path to dart executable
-      local dart_cmd = vim.fn.expand '~/.asdf/shims/dart'
-      if vim.fn.executable(dart_cmd) ~= 1 then
-        dart_cmd = 'dart' -- fallback to PATH
-      end
-
-      require('lspconfig').dartls.setup {
-        capabilities = capabilities,
-        cmd = { dart_cmd, 'language-server', '--protocol=lsp' },
-        filetypes = { 'dart' },
-        root_dir = require('lspconfig.util').root_pattern('pubspec.yaml', '.git'),
-        settings = {},
-      }
     end,
   },
 
@@ -1085,9 +1066,7 @@ require('lazy').setup({
         -- Disable automatic formatting for files that are handled by our sequential autocmd
         -- to avoid race conditions
         local filetype = vim.bo[bufnr].filetype
-        if filetype == 'typescript' or filetype == 'typescriptreact' 
-           or filetype == 'javascript' or filetype == 'javascriptreact' 
-           or filetype == 'go' then
+        if filetype == 'typescript' or filetype == 'typescriptreact' or filetype == 'javascript' or filetype == 'javascriptreact' or filetype == 'go' then
           return nil -- Disable automatic formatting for files with sequential processing
         else
           return {

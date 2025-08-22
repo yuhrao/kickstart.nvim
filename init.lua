@@ -271,113 +271,7 @@ vim.api.nvim_create_autocmd('TextYankPost', {
   end,
 })
 
--- Lock to prevent multiple simultaneous formatting operations
-local formatting_lock = {}
 
--- Sequential import organization and formatting for multiple file types
-vim.api.nvim_create_autocmd('BufWritePre', {
-  desc = 'Sequential formatting: format, then organize imports, then remove unused',
-  group = vim.api.nvim_create_augroup('sequential-format', { clear = true }),
-  pattern = { '*.ts', '*.tsx', '*.js', '*.jsx', '*.go' },
-  callback = function(event)
-    local bufnr = event.buf
-    local filetype = vim.bo[bufnr].filetype
-
-    -- Check if already formatting this buffer
-    if formatting_lock[bufnr] then
-      return
-    end
-
-    -- Set lock
-    formatting_lock[bufnr] = true
-
-    -- Clear lock after operation completes
-    local function clear_lock()
-      vim.schedule(function()
-        formatting_lock[bufnr] = false
-      end)
-    end
-
-    -- TypeScript/JavaScript files
-    if filetype == 'typescript' or filetype == 'typescriptreact' or filetype == 'javascript' or filetype == 'javascriptreact' then
-      local clients = vim.lsp.get_clients { bufnr = bufnr }
-
-      -- Check if typescript-tools client is attached
-      local has_typescript_tools = false
-      for _, client in ipairs(clients) do
-        if client.name == 'typescript-tools' then
-          has_typescript_tools = true
-          break
-        end
-      end
-
-      -- Step 1: Format first
-      local conform = require 'conform'
-      conform.format({
-        bufnr = bufnr,
-        async = false,
-        timeout_ms = 2000,
-        lsp_format = 'never', -- Don't use LSP formatting, only prettier
-      }, function(err)
-        if err then
-          vim.notify('Format failed: ' .. err, vim.log.levels.WARN)
-          clear_lock()
-          return
-        end
-
-        -- Step 2: Organize imports after formatting
-        vim.schedule(function()
-          if has_typescript_tools then
-            local organize_success = pcall(vim.cmd, 'TSToolsOrganizeImports sync')
-            if not organize_success then
-              clear_lock()
-              return
-            end
-
-            -- Step 3: Remove unused imports after organizing
-            vim.schedule(function()
-              pcall(vim.cmd, 'TSToolsRemoveUnused sync')
-              clear_lock()
-            end)
-          else
-            -- Fallback to LSP code actions
-            vim.lsp.buf.code_action {
-              context = { only = { 'source.organizeImports' } },
-              apply = true,
-            }
-
-            -- Wait a bit for organize imports to complete
-            vim.wait(200, function()
-              return false
-            end)
-
-            vim.lsp.buf.code_action {
-              context = { only = { 'source.removeUnused' } },
-              apply = true,
-            }
-
-            clear_lock()
-          end
-        end)
-      end)
-
-    -- Go files
-    elseif filetype == 'go' then
-      -- For Go files, goimports handles both import organization and formatting
-      local conform = require 'conform'
-      conform.format({
-        bufnr = bufnr,
-        async = false,
-        timeout_ms = 2000,
-        lsp_format = 'fallback',
-      }, function()
-        clear_lock()
-      end)
-    else
-      clear_lock()
-    end
-  end,
-})
 
 -- [[ Install `lazy.nvim` plugin manager ]]
 --    See `:help lazy.nvim.txt` or https://github.com/folke/lazy.nvim for more info
@@ -650,8 +544,6 @@ require('lazy').setup({
           separate_diagnostic_server = true,
           publish_diagnostic_on = 'insert_leave',
           expose_as_code_action = {
-            'source.organizeImports',
-            'source.removeUnused',
             'source.addMissingImports',
             'source.fixAll',
           },
@@ -1063,17 +955,29 @@ require('lazy').setup({
           return nil
         end
 
-        -- Disable automatic formatting for files that are handled by our sequential autocmd
-        -- to avoid race conditions
         local filetype = vim.bo[bufnr].filetype
-        if filetype == 'typescript' or filetype == 'typescriptreact' or filetype == 'javascript' or filetype == 'javascriptreact' or filetype == 'go' then
-          return nil -- Disable automatic formatting for files with sequential processing
-        else
+        -- For TS/JS files, never use LSP formatting (only Prettier)
+        if filetype == 'typescript' or filetype == 'typescriptreact' 
+           or filetype == 'javascript' or filetype == 'javascriptreact' then
           return {
-            timeout_ms = 500,
+            timeout_ms = 2000,
+            lsp_format = 'never', -- Only Prettier for TS/JS
+          }
+        end
+        
+        -- For Go, use goimports
+        if filetype == 'go' then
+          return {
+            timeout_ms = 2000,
             lsp_format = 'fallback',
           }
         end
+        
+        -- For all other files, use LSP as fallback
+        return {
+          timeout_ms = 500,
+          lsp_format = 'fallback',
+        }
       end,
       formatters_by_ft = {
         lua = { 'stylua' },

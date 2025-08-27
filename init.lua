@@ -271,8 +271,6 @@ vim.api.nvim_create_autocmd('TextYankPost', {
   end,
 })
 
-
-
 -- [[ Install `lazy.nvim` plugin manager ]]
 --    See `:help lazy.nvim.txt` or https://github.com/folke/lazy.nvim for more info
 local lazypath = vim.fn.stdpath 'data' .. '/lazy/lazy.nvim'
@@ -539,14 +537,21 @@ require('lazy').setup({
     config = function()
       local capabilities = require('blink.cmp').get_lsp_capabilities()
       require('typescript-tools').setup {
+        on_attach = function(client, bufnr)
+          -- Trigger the global LspAttach autocmd to inherit keybindings
+          vim.api.nvim_exec_autocmds('LspAttach', {
+            buffer = bufnr,
+            data = { client_id = client.id },
+          })
+        end,
         capabilities = capabilities,
+        handlers = {
+          ['textDocument/codeAction'] = vim.lsp.with(vim.lsp.handlers['textDocument/codeAction'], {}),
+        },
         settings = {
           separate_diagnostic_server = true,
           publish_diagnostic_on = 'insert_leave',
-          expose_as_code_action = {
-            'source.addMissingImports',
-            'source.fixAll',
-          },
+          expose_as_code_action = 'all',
           tsserver_path = nil,
           tsserver_plugins = {},
           tsserver_max_memory = 'auto',
@@ -957,14 +962,13 @@ require('lazy').setup({
 
         local filetype = vim.bo[bufnr].filetype
         -- For TS/JS files, never use LSP formatting (only Prettier)
-        if filetype == 'typescript' or filetype == 'typescriptreact' 
-           or filetype == 'javascript' or filetype == 'javascriptreact' then
+        if filetype == 'typescript' or filetype == 'typescriptreact' or filetype == 'javascript' or filetype == 'javascriptreact' then
           return {
             timeout_ms = 2000,
             lsp_format = 'never', -- Only Prettier for TS/JS
           }
         end
-        
+
         -- For Go, use goimports
         if filetype == 'go' then
           return {
@@ -972,7 +976,7 @@ require('lazy').setup({
             lsp_format = 'fallback',
           }
         end
-        
+
         -- For all other files, use LSP as fallback
         return {
           timeout_ms = 500,
@@ -1242,6 +1246,7 @@ require('lazy').setup({
         'vimdoc',
         'typescript',
         'javascript',
+        'tsx',
         'json',
       },
       -- Autoinstall languages that are not installed

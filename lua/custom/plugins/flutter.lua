@@ -19,6 +19,14 @@ return {
       capabilities = blink_cmp.get_lsp_capabilities()
     end
     
+    -- Ensure proper text synchronization for Dart LSP to prevent RangeErrors
+    capabilities.textDocument = capabilities.textDocument or {}
+    capabilities.textDocument.synchronization = capabilities.textDocument.synchronization or {}
+    capabilities.textDocument.synchronization.dynamicRegistration = false
+    capabilities.textDocument.synchronization.willSave = false
+    capabilities.textDocument.synchronization.willSaveWaitUntil = false
+    capabilities.textDocument.synchronization.didSave = true
+    
     require('flutter-tools').setup {
       -- Specify Flutter SDK path (using asdf shim which will resolve to the correct version)
       flutter_path = vim.fn.expand '~/.asdf/shims/flutter',

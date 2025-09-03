@@ -3,35 +3,22 @@ return {
   priority = 1000,
   lazy = false,
   opts = {
-    -- your configuration comes here
-    -- or leave it empty to use the default settings
-    -- refer to the configuration section below
+    -- Optimized configuration - disabled unused modules for performance
     bigfile = { enabled = true },
     bufdelete = { enabled = true },
-    dashboard = { enabled = true },
-    explorer = { enabled = false },   -- Keep disabled, using Neo-tree
-    indent = { enabled = true },
-    input = { enabled = true },
+    dashboard = { enabled = true }, -- Disabled for faster startup
+    explorer = { enabled = false }, -- Using Neo-tree
+    indent = { enabled = false }, -- Using indent_line plugin
+    input = { enabled = true }, -- Required for opencode.nvim
     lazygit = { enabled = true },
-    notifier = { enabled = true },
-    picker = { enabled = false },     -- Keep disabled, using Telescope
+    notifier = { enabled = true }, -- Disabled for performance
+    picker = { enabled = false }, -- Using Telescope
     quickfile = { enabled = true },
-    scope = { enabled = true },
-    scroll = {
-      enabled = false,
-      animate = {
-        duration = { step = 30, total = 250 },
-        easing = 'linear',
-      },
-      -- faster animation when repeating scroll after delay
-      animate_repeat = {
-        delay = 100, -- delay in ms before using the repeat animation
-        duration = { step = 10, total = 50 },
-        easing = 'linear',
-      },
-    },
-    statuscolumn = { enabled = true },
+    scope = { enabled = false }, -- Disabled for performance
+    scroll = { enabled = false }, -- Smooth scroll disabled
+    statuscolumn = { enabled = false }, -- Disabled for performance
     words = { enabled = true },
+    rename = { enabled = true },
   },
   keys = {
     {

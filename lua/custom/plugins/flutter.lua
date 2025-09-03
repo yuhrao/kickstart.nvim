@@ -5,6 +5,10 @@ return {
     'stevearc/dressing.nvim',
   },
   ft = { 'dart' },
+  -- Only load in Flutter projects
+  cond = function()
+    return vim.fn.filereadable('pubspec.yaml') == 1
+  end,
   config = function()
     -- Ensure asdf shims are in PATH
     local asdf_shims = vim.fn.expand '~/.asdf/shims'

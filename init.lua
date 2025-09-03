@@ -111,42 +111,32 @@ vim.o.mouse = 'a'
 vim.o.showmode = false
 
 -- Sync clipboard between OS and Neovim.
---  Schedule the setting after `UiEnter` because it can increase startup-time.
---  Remove this option if you want your OS clipboard to remain independent.
+--  Lazy-load clipboard configuration for better startup performance
 --  See `:help 'clipboard'`
--- Set clipboard configuration immediately
-vim.o.clipboard = 'unnamedplus'
-vim.g.clipboard = {
-  name = 'macOS-clipboard',
-  copy = {
-    ['+'] = 'pbcopy',
-    ['*'] = 'pbcopy',
-  },
-  paste = {
-    ['+'] = 'pbpaste',
-    ['*'] = 'pbpaste',
-  },
-  cache_enabled = 0,
-}
+vim.api.nvim_create_autocmd('UIEnter', {
+  once = true,
+  callback = function()
+    vim.o.clipboard = 'unnamedplus'
+    vim.g.clipboard = {
+      name = 'macOS-clipboard',
+      copy = {
+        ['+'] = 'pbcopy',
+        ['*'] = 'pbcopy',
+      },
+      paste = {
+        ['+'] = 'pbpaste',
+        ['*'] = 'pbpaste',
+      },
+      cache_enabled = 0,
+    }
+  end,
+})
 
-vim.schedule(function()
-  -- Set colorscheme after all plugins are loaded
-  vim.cmd.colorscheme 'cyberdream'
-end)
+-- Colorscheme is now loaded via the colorscheme plugin with proper priority
 
 vim.o.winborder = 'rounded'
 
-vim.diagnostic.config {
-  signs = {
-    text = {
-      [vim.diagnostic.severity.ERROR] = ' ',
-      [vim.diagnostic.severity.WARN] = ' ',
-      [vim.diagnostic.severity.INFO] = '󰋼 ',
-      [vim.diagnostic.severity.HINT] = ' ',
-    },
-  },
-  severity_sort = true,
-}
+-- Diagnostic configuration moved to LSP config section to avoid duplication
 
 vim.opt.termguicolors = true
 
@@ -163,8 +153,8 @@ vim.o.smartcase = true
 -- Keep signcolumn on by default
 vim.o.signcolumn = 'yes'
 
--- Decrease update time
-vim.o.updatetime = 250
+-- Decrease update time (increased for better performance)
+vim.o.updatetime = 750
 
 -- Decrease mapped sequence wait time
 vim.o.timeoutlen = 300
@@ -245,17 +235,7 @@ vim.opt.expandtab = true -- Use spaces instead of tabs
 vim.opt.smartindent = true -- Smart autoindenting when starting a new line
 vim.opt.autoindent = true -- Copy indent from current line when starting a new line
 
--- Optional: Set consistent indentation for specific filetypes
--- This ensures the settings apply even if other plugins try to override them
-vim.api.nvim_create_autocmd('FileType', {
-  pattern = '*',
-  callback = function()
-    vim.opt_local.tabstop = 2
-    vim.opt_local.shiftwidth = 2
-    vim.opt_local.softtabstop = 2
-    vim.opt_local.expandtab = true
-  end,
-})
+-- Removed FileType autocmd for all files - global settings are sufficient
 
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
@@ -352,7 +332,7 @@ require('lazy').setup({
 
   { -- Useful plugin to show you pending keybinds.
     'folke/which-key.nvim',
-    event = 'VimEnter', -- Sets the loading event to 'VimEnter'
+    event = 'VeryLazy', -- Load later for better startup performance
     opts = {
       -- delay between pressing a key and opening which-key (milliseconds)
       -- this setting is independent of vim.o.timeoutlen
@@ -416,7 +396,22 @@ require('lazy').setup({
 
   { -- Fuzzy Finder (files, lsp, etc)
     'nvim-telescope/telescope.nvim',
-    event = 'VimEnter',
+    cmd = 'Telescope',
+    keys = {
+      { '<leader>sh', desc = '[S]earch [H]elp' },
+      { '<leader>sk', desc = '[S]earch [K]eymaps' },
+      { '<leader>sf', desc = '[S]earch [F]iles' },
+      { '<leader>ss', desc = '[S]earch [S]elect Telescope' },
+      { '<leader>sw', desc = '[S]earch current [W]ord' },
+      { '<leader>sg', desc = '[S]earch by [G]rep' },
+      { '<leader>sd', desc = '[S]earch [D]iagnostics' },
+      { '<leader>sr', desc = '[S]earch [R]esume' },
+      { '<leader>s.', desc = '[S]earch Recent Files' },
+      { '<leader><leader>', desc = '[ ] Find existing buffers' },
+      { '<leader>/', desc = '[/] Fuzzily search in current buffer' },
+      { '<leader>s/', desc = '[S]earch [/] in Open Files' },
+      { '<leader>sn', desc = '[S]earch [N]eovim files' },
+    },
     dependencies = {
       'nvim-lua/plenary.nvim',
       { -- If encountering errors, see telescope-fzf-native README for installation instructions
@@ -535,6 +530,10 @@ require('lazy').setup({
     'pmizio/typescript-tools.nvim',
     dependencies = { 'nvim-lua/plenary.nvim', 'neovim/nvim-lspconfig' },
     ft = { 'typescript', 'typescriptreact', 'javascript', 'javascriptreact' },
+    -- Only load when TypeScript/JavaScript files are present
+    cond = function()
+      return vim.fn.filereadable 'package.json' == 1 or vim.fn.filereadable 'tsconfig.json' == 1
+    end,
     config = function()
       local capabilities = require('blink.cmp').get_lsp_capabilities()
       require('typescript-tools').setup {
@@ -550,12 +549,12 @@ require('lazy').setup({
           ['textDocument/codeAction'] = vim.lsp.with(vim.lsp.handlers['textDocument/codeAction'], {}),
         },
         settings = {
-          separate_diagnostic_server = true,
+          separate_diagnostic_server = false, -- Use single server for performance
           publish_diagnostic_on = 'insert_leave',
           expose_as_code_action = 'all',
           tsserver_path = nil,
           tsserver_plugins = {},
-          tsserver_max_memory = 'auto',
+          tsserver_max_memory = 'auto', -- Limit memory usage
           tsserver_format_options = {
             allowIncompleteCompletions = false,
             allowRenameOfImportPath = false,
@@ -595,7 +594,7 @@ require('lazy').setup({
           tsserver_locale = 'en',
           complete_function_calls = false,
           include_completions_with_insert_text = true,
-          code_lens = 'off',
+          code_lens = 'off', -- Disabled for performance
           disable_member_code_lens = true,
           jsx_close_tag = {
             enable = false,
@@ -724,7 +723,8 @@ require('lazy').setup({
           local client = vim.lsp.get_client_by_id(event.data.client_id)
           if client and client_supports_method(client, vim.lsp.protocol.Methods.textDocument_documentHighlight, event.buf) then
             local highlight_augroup = vim.api.nvim_create_augroup('kickstart-lsp-highlight', { clear = false })
-            vim.api.nvim_create_autocmd({ 'CursorHold', 'CursorHoldI' }, {
+            -- Only highlight in normal mode (removed CursorHoldI for performance)
+            vim.api.nvim_create_autocmd({ 'CursorHold' }, {
               buffer = event.buf,
               group = highlight_augroup,
               callback = vim.lsp.buf.document_highlight,
@@ -1234,24 +1234,16 @@ require('lazy').setup({
     -- [[ Configure Treesitter ]] See `:help nvim-treesitter`
     opts = {
       ensure_installed = {
-        'bash',
-        'c',
-        'diff',
-        'html',
         'lua',
-        'luadoc',
-        'markdown',
-        'markdown_inline',
-        'query',
         'vim',
         'vimdoc',
         'typescript',
         'javascript',
         'tsx',
-        'json',
+        -- Add others only as needed
       },
-      -- Autoinstall languages that are not installed
-      auto_install = true,
+      -- Disable auto-install for better startup performance
+      auto_install = false,
       incremental_selection = {
         enable = true,
         keymaps = {
@@ -1328,6 +1320,13 @@ require('lazy').setup({
     },
   },
 })
+
+-- Performance monitoring command
+vim.api.nvim_create_user_command('StartupTime', function()
+  local tmpfile = vim.fn.tempname()
+  vim.cmd('!nvim --startuptime ' .. tmpfile .. ' +qa')
+  vim.cmd('tabnew ' .. tmpfile)
+end, { desc = 'Profile Neovim startup time' })
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et

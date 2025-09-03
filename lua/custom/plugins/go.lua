@@ -17,7 +17,10 @@ return {
     --   group = format_sync_grp,
     -- })
   end,
-  event = { 'CmdlineEnter' },
   ft = { 'go', 'gomod' },
+  -- Only load in Go projects
+  cond = function()
+    return vim.fn.filereadable('go.mod') == 1 or vim.fn.filereadable('go.work') == 1
+  end,
   build = ':lua require("go.install").update_all_sync()', -- if you need to install/update all binaries
 }
